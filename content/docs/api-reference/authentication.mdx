@@ -1,0 +1,109 @@
+---
+title: Authentication API
+description: Endpoints for managing API keys and verifying credentials.
+---
+
+## List API keys
+
+Returns all API keys for the current workspace.
+
+```
+GET /v1/api-keys
+```
+
+**Response**
+
+```json
+{
+  "data": [
+    {
+      "id": "key_01j...",
+      "name": "Production server",
+      "scopes": ["resources:read", "resources:write"],
+      "created_at": "2025-01-01T00:00:00Z",
+      "last_used_at": "2025-06-01T12:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## Create API key
+
+Creates a new API key. The raw key value is returned **once** and cannot be retrieved again.
+
+```
+POST /v1/api-keys
+```
+
+**Body**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | Human-readable label for the key |
+| `scopes` | string[] | Yes | Permission scopes |
+
+**Request**
+
+```bash
+curl -X POST https://api.amarsia.com/v1/api-keys \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My integration",
+    "scopes": ["resources:read"]
+  }'
+```
+
+**Response**
+
+```json
+{
+  "data": {
+    "id": "key_01j...",
+    "name": "My integration",
+    "key": "sk_live_...",
+    "scopes": ["resources:read"],
+    "created_at": "2025-01-01T00:00:00Z"
+  }
+}
+```
+
+<Callout type="warning">
+  Store the `key` value immediately — it is only included in the creation response.
+</Callout>
+
+---
+
+## Delete API key
+
+Immediately invalidates an API key.
+
+```
+DELETE /v1/api-keys/:id
+```
+
+**Response**: `204 No Content`
+
+---
+
+## Verify credentials
+
+A lightweight endpoint to confirm that a key is valid and return its associated metadata.
+
+```
+GET /v1/auth/me
+```
+
+**Response**
+
+```json
+{
+  "data": {
+    "key_id": "key_01j...",
+    "workspace_id": "ws_01j...",
+    "scopes": ["resources:read", "resources:write"]
+  }
+}
+```

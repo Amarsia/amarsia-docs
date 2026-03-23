@@ -1,0 +1,82 @@
+---
+title: API Reference
+description: Complete reference for the Amarsia REST API — every endpoint, parameter, and response schema.
+---
+
+## Base URL
+
+```
+https://api.amarsia.com/v1
+```
+
+All endpoints are relative to this base URL. HTTPS is required.
+
+## Authentication
+
+All requests must include a valid API key in the `Authorization` header:
+
+```bash
+Authorization: Bearer sk_live_...
+```
+
+See [Authentication](/api-reference/authentication) for key types, scopes, and rotation.
+
+## Request format
+
+- All request bodies must be JSON
+- Set `Content-Type: application/json` on `POST`, `PUT`, and `PATCH` requests
+
+## Response format
+
+All responses are JSON. Successful responses use an envelope with a `data` key. Error responses use an `error` key.
+
+**Success:**
+
+```json
+{
+  "data": { ... },
+  "meta": {
+    "requestId": "req_01j...",
+    "timestamp": "2025-01-01T00:00:00Z"
+  }
+}
+```
+
+**Error:**
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "The requested resource does not exist.",
+    "param": null
+  }
+}
+```
+
+## HTTP status codes
+
+| Code | Meaning |
+|---|---|
+| `200` | OK |
+| `201` | Created |
+| `204` | No content (successful delete) |
+| `400` | Bad request |
+| `401` | Authentication failed |
+| `403` | Forbidden |
+| `404` | Not found |
+| `422` | Validation error |
+| `429` | Rate limit exceeded |
+| `500` | Internal server error |
+
+## Rate limits
+
+The API allows **1,000 requests per minute** per API key. Requests that exceed this limit receive a `429` response with a `Retry-After` header indicating how many milliseconds to wait.
+
+## In this section
+
+<Cards>
+  <Card title="Authentication" href="/docs/api-reference/authentication" description="API keys, scopes, and credential management endpoints." />
+  <Card title="Resources" href="/docs/api-reference/resources" description="Create, read, update, and delete resources." />
+  <Card title="Events" href="/docs/api-reference/events" description="Query the immutable event log." />
+</Cards>

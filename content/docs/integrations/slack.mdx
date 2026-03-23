@@ -1,0 +1,67 @@
+---
+title: Slack
+description: Post Amarsia notifications and alerts to Slack channels using webhooks.
+---
+
+## Overview
+
+Connect Amarsia to Slack to receive real-time notifications when important events happen in your workspace — new resources created, errors flagged, or custom triggers fired.
+
+## Prerequisites
+
+- A Slack workspace where you have permission to install apps
+- An Amarsia workspace with a live API key
+
+## Step 1 — Create a Slack app
+
+1. Go to [api.slack.com/apps](https://api.slack.com/apps) and click **Create New App**.
+2. Choose **From scratch**, give it a name, and select your workspace.
+3. Under **Features → Incoming Webhooks**, enable incoming webhooks.
+4. Click **Add New Webhook to Workspace**, select the target channel, and click **Allow**.
+5. Copy the webhook URL (format: `https://hooks.slack.com/services/...`).
+
+## Step 2 — Add a webhook in Amarsia
+
+Create an Amarsia webhook that forwards events to your Slack handler:
+
+```typescript
+// lib/notify-slack.ts
+export async function notifySlack(message: string) {
+  await fetch(process.env.SLACK_WEBHOOK_URL!, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: message }),
+  });
+}
+```
+
+## Step 3 — Listen for Amarsia events
+
+Use your Amarsia webhook listener to send formatted messages to Slack:
+
+```typescript
+// app/api/amarsia-webhook/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { notifySlack } from '@/lib/notify-slack';
+import { verifyWebhook } from '@/lib/verify-webhook';
+
+export async function POST(request: NextRequest) {
+  const body = await request.text();
+  const signature = request.headers.get('amarsia-signature')!;
+
+  if (!verifyWebhook(body, signature, process.env.AMARSIA_WEBHOOK_SECRET!)) {
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+  }
+
+  const event = JSON.parse(body);
+
+  await notifySlack(`:bell: *${event.type}* — resource \`${event.data.id}\` changed.`);
+
+  return NextResponse.json({ ok: true });
+}
+```
+
+## Related
+
+- [Webhooks](/features/webhooks)
+- [Stripe integration](/integrations/stripe)

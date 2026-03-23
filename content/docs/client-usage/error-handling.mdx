@@ -1,0 +1,77 @@
+---
+title: Error Handling
+description: Handle API errors and implement reliable retry logic in your Amarsia integration.
+---
+
+## Overview
+
+The Amarsia SDK throws typed errors that carry the HTTP status code, error code, and a human-readable message. Catching these errors lets you respond to specific failure cases rather than treating all errors the same way.
+
+## Error types
+
+```typescript
+import { AmarsiError, NotFoundError, ValidationError, AuthError } from '@amarsia/sdk';
+```
+
+| Class | HTTP Status | When it's thrown |
+|---|---|---|
+| `AuthError` | `401` | Missing or invalid API key |
+| `ForbiddenError` | `403` | Insufficient permissions |
+| `NotFoundError` | `404` | Resource does not exist |
+| `ValidationError` | `422` | Invalid request body |
+| `RateLimitError` | `429` | Too many requests |
+| `AmarsiError` | `5xx` | Unexpected server error |
+
+## Catching errors
+
+```typescript
+import { AmarsiError, NotFoundError, ValidationError } from '@amarsia/sdk';
+
+try {
+  const resource = await client.resources.get('res_01j...');
+} catch (error) {
+  if (error instanceof NotFoundError) {
+    console.log('Resource not found');
+  } else if (error instanceof ValidationError) {
+    console.log('Validation failed:', error.fields);
+  } else if (error instanceof AmarsiError) {
+    console.log('API error:', error.code, error.message);
+  } else {
+    throw error; // re-throw unexpected errors
+  }
+}
+```
+
+## Retrying on rate limits
+
+The SDK does not retry automatically. For production use, wrap requests in a retry loop that respects the `Retry-After` header:
+
+```typescript
+import { RateLimitError } from '@amarsia/sdk';
+
+async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
+  let attempt = 0;
+
+  while (true) {
+    try {
+      return await fn();
+    } catch (error) {
+      attempt++;
+      if (error instanceof RateLimitError && attempt < maxAttempts) {
+        const retryAfter = error.retryAfter ?? 1000;
+        await new Promise(resolve => setTimeout(resolve, retryAfter));
+        continue;
+      }
+      throw error;
+    }
+  }
+}
+
+// Usage
+const resource = await withRetry(() => client.resources.get('res_01j...'));
+```
+
+## Related
+
+- [JavaScript SDK](/client-usage/javascript)
+- [API Reference](/api-reference)

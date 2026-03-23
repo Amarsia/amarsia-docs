@@ -1,0 +1,73 @@
+---
+title: Architecture
+description: How Amarsia is structured internally and how API requests flow through the platform.
+---
+
+## Overview
+
+Amarsia is built around a simple, predictable request lifecycle. Every API call goes through the same pipeline: authentication, authorization, validation, execution, and response.
+
+```
+Client → API Gateway → Auth middleware → Handler → Data layer → Response
+```
+
+## Request lifecycle
+
+### 1. Authentication
+
+Every request must carry a valid API key or session token. Unauthenticated requests are rejected at the gateway before reaching any handler.
+
+See [Authentication](/api-reference/authentication) for details.
+
+### 2. Authorization
+
+After authentication, the platform checks whether the authenticated identity has permission to perform the requested operation on the target resource.
+
+Permissions are role-based and scoped to the workspace. See [Roles & Permissions](/features/permissions) for details.
+
+### 3. Validation
+
+Incoming request bodies are validated against a strict schema. Invalid payloads receive a `422 Unprocessable Entity` response with field-level error details.
+
+### 4. Execution
+
+The core handler processes the request — reading from or writing to the data layer — and produces a result.
+
+### 5. Response
+
+Responses are always JSON-encoded and follow a consistent envelope structure:
+
+```json
+{
+  "data": { ... },
+  "meta": {
+    "requestId": "req_01j...",
+    "timestamp": "2025-01-01T00:00:00Z"
+  }
+}
+```
+
+Error responses include an `error` key instead of `data`:
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Resource not found.",
+    "param": null
+  }
+}
+```
+
+## Environments
+
+Amarsia provides isolated **live** and **test** environments. Test environments share the same API surface but use separate data stores. Switch between them by using the corresponding API key.
+
+<Callout type="info">
+  All resources created in the test environment are prefixed with `test_` in their IDs.
+</Callout>
+
+## Related
+
+- [Data Model](/concepts/data-model)
+- [Authentication](/api-reference/authentication)

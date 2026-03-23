@@ -1,0 +1,118 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/*
+ * Brand palette:
+ *   #ff4914 — accent  (active link text, key buttons)
+ *   #100500 — content primary (all text in light mode)
+ *   #ffffff — backgrounds in light mode
+ *   #FDECD8 — muted surface (.callout-brand only, very sparingly)
+ *
+ * Dark mode uses a warm dark bg — the hue (18°) is derived from the brand
+ * orange so it feels intentional rather than generic gray/black.
+ */
+
+/* ── Brand design tokens ─────────────────────────────────────────────────── */
+@theme {
+  --color-brand:     #ff4914;
+  --color-brand-muted: #FDECD8;
+  --color-brand-ink: #100500;
+}
+
+/* ── Light mode ─────────────────────────────────────────────────────────── */
+:root {
+  --color-fd-background:           #ffffff;
+  --color-fd-popover:              #ffffff;
+  --color-fd-foreground:           #100500;
+  --color-fd-popover-foreground:   #100500;
+  --color-fd-card-foreground:      #100500;
+  --color-fd-secondary-foreground: #100500;
+  --color-fd-accent-foreground:    #100500;
+  --color-fd-muted-foreground:     hsl(0, 0%, 42%);
+}
+
+body {
+  color: #100500;
+  background-color: #ffffff;
+}
+
+/* ── Dark mode — warm dark, not pure black ──────────────────────────────── */
+/*
+ * Hue 18° is the warm orange of the brand accent, desaturated and darkened
+ * so the background reads as dark but never cold/blue-gray.
+ *   Page bg:  hsl(18, 12%, 9%)  ≈ #1a1412
+ *   Sidebar:  hsl(18, 10%, 11%) ≈ #1e1b19
+ *   Cards:    hsl(18, 10%, 13%) ≈ #231f1d
+ */
+.dark {
+  --color-fd-background:           hsl(18, 12%, 9%);
+  --color-fd-popover:              hsl(18, 10%, 11%);
+  --color-fd-card:                 hsl(18, 10%, 13%);
+  --color-fd-foreground:           hsl(0, 0%, 92%);
+  --color-fd-popover-foreground:   hsl(0, 0%, 88%);
+  --color-fd-card-foreground:      hsl(0, 0%, 96%);
+  --color-fd-secondary-foreground: hsl(0, 0%, 92%);
+  --color-fd-accent-foreground:    hsl(0, 0%, 90%);
+  --color-fd-muted-foreground:     hsl(0, 0%, 60%);
+  --color-fd-border:               hsla(18, 8%, 30%, 30%);
+  --color-fd-muted:                hsl(18, 8%, 14%);
+  --color-fd-secondary:            hsl(18, 8%, 14%);
+}
+
+.dark body {
+  background-color: hsl(18, 12%, 9%);
+  color: hsl(0, 0%, 92%);
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+#nd-sidebar {
+  background-color: #ffffff !important;
+  border-right: 1px solid hsl(0, 0%, 91%) !important;
+  box-shadow: none !important;
+}
+
+.dark #nd-sidebar {
+  background-color: hsl(18, 10%, 11%) !important;
+  border-right-color: hsla(18, 8%, 30%, 30%) !important;
+}
+
+/* ── Active sidebar item: orange text only ───────────────────────────────── */
+#nd-sidebar a[data-active='true'],
+#nd-sidebar [data-active='true'] > a {
+  color: #ff4914 !important;
+}
+
+#nd-sidebar a[data-active='true'] {
+  border-left-color: #ff4914 !important;
+}
+
+/* ── Top nav active links ────────────────────────────────────────────────── */
+header a[data-active='true'],
+nav a[data-active='true'] {
+  color: #ff4914 !important;
+}
+
+/* ── TOC active heading ──────────────────────────────────────────────────── */
+[data-toc] a[data-active='true'],
+aside a[aria-current='true'] {
+  color: #ff4914 !important;
+}
+
+[data-toc] a[data-active='true']::before,
+aside a[aria-current='true']::before {
+  background-color: #ff4914 !important;
+}
+
+/* ── Focus ring ──────────────────────────────────────────────────────────── */
+*:focus-visible {
+  outline-color: #ff4914;
+}
+
+/* ── Callout with brand muted bg — use .callout-brand manually ───────────── */
+.callout-brand {
+  background-color: #FDECD8;
+  border-left: 3px solid #ff4914;
+  padding: 1rem 1.25rem;
+  border-radius: 0.375rem;
+}

@@ -1,0 +1,134 @@
+---
+title: [Resource or domain name] API
+description: [One sentence describing what endpoints this page covers. ≤160 chars]
+---
+
+## Overview
+
+[1–2 sentences describing the resource or domain these endpoints operate on. Include the base path.]
+
+Base path: `/v1/[resource]`
+
+---
+
+## List [resources]
+
+Returns a paginated list of [resources].
+
+```
+GET /v1/[resources]
+```
+
+**Query parameters**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `[param]` | `[type]` | [Description] |
+| `limit` | integer | Results per page (default: `20`, max: `100`) |
+| `cursor` | string | Pagination cursor from a previous response |
+
+**Response**
+
+```json
+{
+  "data": [
+    {
+      "id": "[resource]_01j...",
+      "[field]": "[value]"
+    }
+  ],
+  "meta": {
+    "nextCursor": "cursor_...",
+    "hasMore": true
+  }
+}
+```
+
+---
+
+## Get [resource]
+
+```
+GET /v1/[resources]/:id
+```
+
+**Response**
+
+```json
+{
+  "data": {
+    "id": "[resource]_01j...",
+    "[field]": "[value]"
+  }
+}
+```
+
+---
+
+## Create [resource]
+
+```
+POST /v1/[resources]
+```
+
+**Body**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `[field]` | `[type]` | Yes | [Description] |
+| `[field]` | `[type]` | No | [Description] |
+
+**Request**
+
+```bash
+curl -X POST https://api.amarsia.com/v1/[resources] \
+  -H "Authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "[field]": "[value]"
+  }'
+```
+
+**Response**: `201 Created`
+
+```json
+{
+  "data": {
+    "id": "[resource]_01j...",
+    "[field]": "[value]",
+    "created_at": "2025-01-01T00:00:00Z"
+  }
+}
+```
+
+---
+
+## Update [resource]
+
+Performs a **partial update** — only the fields you include are changed.
+
+```
+PATCH /v1/[resources]/:id
+```
+
+**Body**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `[field]` | `[type]` | No | [Description] |
+
+---
+
+## Delete [resource]
+
+```
+DELETE /v1/[resources]/:id
+```
+
+**Response**: `204 No Content`
+
+---
+
+## [Optional: Additional endpoint]
+
+[Add more H2 sections for each additional endpoint. Keep one endpoint per H2.]

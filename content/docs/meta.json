@@ -1,0 +1,11 @@
+{
+  "title": "Amarsia Docs",
+  "pages": [
+    "index",
+    "concepts",
+    "features",
+    "integrations",
+    "client-usage",
+    "api-reference"
+  ]
+}

@@ -1,0 +1,82 @@
+---
+title: [SDK or client name]
+description: [One sentence describing the client and what it enables. ≤160 chars]
+---
+
+## Installation
+
+```bash
+[Package manager install command]
+```
+
+[Note TypeScript support or any additional packages required.]
+
+## Quick start
+
+The shortest working example:
+
+```typescript
+import { [ClientClass] } from '[package-name]';
+
+const client = new [ClientClass]({
+  apiKey: process.env.AMARSIA_API_KEY,
+});
+
+[2–5 lines showing the most common operation]
+```
+
+## Authentication
+
+[Explain how to pass credentials. Cover both explicit and environment variable approaches.]
+
+```typescript
+// Explicit key
+const client = new [ClientClass]({ apiKey: 'sk_live_...' });
+
+// Uses AMARSIA_API_KEY env var automatically
+const client = new [ClientClass]();
+```
+
+<Callout type="warning">
+  Never hardcode API keys in source code. Use environment variables.
+</Callout>
+
+## Core operations
+
+### [Operation group 1 — e.g., Resources]
+
+```typescript
+// [Brief operation name]
+const result = await client.[resource].[method]([params]);
+
+// [Brief operation name]
+const item = await client.[resource].[method]('[id]');
+```
+
+### [Operation group 2 — optional]
+
+```typescript
+[Code example]
+```
+
+## [Advanced usage — optional]
+
+[Cover pagination, retries, streaming, or other patterns that go beyond the basics. Remove this section if not applicable.]
+
+```typescript
+[Advanced code example]
+```
+
+## TypeScript
+
+[Describe the available types. Show how to import and use them.]
+
+```typescript
+import type { [TypeName], [TypeName] } from '[package-name]';
+```
+
+## Related
+
+- [[Error handling]](/docs/client-usage/error-handling)
+- [[Authentication feature]](/docs/features/authentication)
+- [[API reference]](/docs/api-reference)

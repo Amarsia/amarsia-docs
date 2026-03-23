@@ -1,0 +1,50 @@
+---
+title: Permissions
+description: Role-based access control and workspace membership in Amarsia.
+---
+
+## Overview
+
+Amarsia uses role-based access control (RBAC) scoped to the workspace. Every API key and user is assigned one or more roles that determine what operations they can perform.
+
+## Built-in roles
+
+| Role | Description |
+|---|---|
+| `owner` | Full access to all resources and settings |
+| `admin` | Full access except billing and ownership transfer |
+| `developer` | Read/write access to all resources; no access to settings |
+| `viewer` | Read-only access to all resources |
+
+## Scopes
+
+API keys can be further restricted using **scopes** — fine-grained permissions on top of the base role.
+
+```
+resources:read       Read any resource
+resources:write      Create and update resources
+events:read          Read events
+webhooks:manage      Create, update, and delete webhooks
+```
+
+When creating an API key, select only the scopes your integration actually needs.
+
+## Checking permissions
+
+If a request is denied due to insufficient permissions, the API returns:
+
+```json
+{
+  "error": {
+    "code": "forbidden",
+    "message": "You do not have permission to perform this action."
+  }
+}
+```
+
+HTTP status: `403 Forbidden`.
+
+## Related
+
+- [Authentication](/features/authentication)
+- [API Reference](/api-reference)
