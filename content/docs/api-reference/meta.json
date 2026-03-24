@@ -3,7 +3,8 @@
   "pages": [
     "index",
     "authentication",
-    "resources",
-    "events"
+    "runner",
+    "conversation",
+    "errors"
   ]
 }

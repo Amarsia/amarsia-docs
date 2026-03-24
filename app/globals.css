@@ -76,7 +76,7 @@ body {
 
 #nd-sidebar a[data-active='true'] {
   border-left-color: #ff4914 !important;
-  background-color: color-mix(in srgb, #ff4914 10%, transparent) !important;
+  background-color: color-mix(in srgb, #FDECD8 40%, transparent) !important;
 }
 
 header a[data-active='true'],
@@ -125,4 +125,14 @@ aside a[aria-current='true']::before {
   border-left: 3px solid #ff4914;
   padding: 1rem 1.25rem;
   border-radius: 0.375rem;
+}
+
+/* Search dialog: make list padding perfectly even */
+.am-search-list > div {
+  padding: 0.75rem !important; /* top/bottom/left/right */
+}
+
+/* Empty state uses the same rhythm as list padding */
+.am-search-empty {
+  padding: 0.75rem;
 }

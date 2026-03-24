@@ -1,0 +1,38 @@
+---
+title: API key
+description: Secure every API call to deployed assistants using your Amarsia API key.
+---
+
+## Overview
+
+API key is required for any Amarsia API usage. Your application sends it in the `x-api-key` header to authenticate requests.
+
+No key means no access, so key handling is a core part of production readiness.
+
+## Where to create keys
+
+- [Open API keys dashboard](https://amarsia.com/dash/api_keys)
+
+From there you can create, copy, and revoke keys.
+
+## Request header
+
+```bash
+x-api-key: YOUR_API_KEY
+```
+
+## Key management basics
+
+- Keep keys on your backend or secure server environment.
+- Never hardcode keys in public frontend code.
+- Revoke and rotate keys if exposure is suspected.
+- Use separate keys by environment when possible.
+
+<Callout type="warning">
+Treat API keys like production credentials. If a key leaks, rotate it immediately.
+</Callout>
+
+## Related
+
+- [Client usage quickstart](/client-usage/quickstart)
+- [Authentication reference](/api-reference/authentication)

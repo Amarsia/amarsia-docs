@@ -1,0 +1,64 @@
+---
+title: Multimodal
+description: Send text and files together in one request so the assistant can understand everything at once.
+---
+
+## Simple idea
+
+`content` is a list.
+Each list item is one thing you send:
+
+- text message
+- image
+- video
+- audio
+- file URL (like PDF link)
+
+## Structure the API expects
+
+| Item `type` | Required fields | Example |
+|---|---|---|
+| `text` | `text` | `{ "type": "text", "text": "Summarize this" }` |
+| `image` | `mime_type`, `file_uri` | `{ "type": "image", "mime_type": "image/jpeg", "file_uri": "https://..." }` |
+| `video` | `mime_type`, `file_uri` | `{ "type": "video", "mime_type": "video/mp4", "file_uri": "https://..." }` |
+| `audio` | `mime_type`, `file_uri` | `{ "type": "audio", "mime_type": "audio/mpeg", "file_uri": "https://..." }` |
+| `url` | `mime_type`, `file_uri` | `{ "type": "url", "mime_type": "application/pdf", "file_uri": "https://..." }` |
+
+## Clear example
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Read this brochure and tell me key offers."
+    },
+    {
+      "type": "image",
+      "mime_type": "image/jpeg",
+      "file_uri": "https://example.com/brochure-page.jpg"
+    },
+    {
+      "type": "url",
+      "mime_type": "application/pdf",
+      "file_uri": "https://example.com/price-list.pdf"
+    }
+  ]
+}
+```
+
+## Response shape (regular API)
+
+```json
+{
+  "content": "Here are the key offers...",
+  "model": "MODEL_NAME",
+  "input_tokens": 120,
+  "output_tokens": 80
+}
+```
+
+## Related
+
+- [Quickstart](/client-usage/quickstart)
+- [Runner API reference](/api-reference/runner)

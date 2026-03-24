@@ -1,82 +1,72 @@
 ---
-title: API Reference
-description: Complete reference for the Amarsia REST API — every endpoint, parameter, and response schema.
+title: API reference
+description: Simple, complete reference for request structure, response structure, and every core endpoint.
 ---
 
 ## Base URL
 
-```
+```text
 https://api.amarsia.com/v1
 ```
 
-All endpoints are relative to this base URL. HTTPS is required.
+All endpoint paths below are appended to this base URL.
 
 ## Authentication
 
-All requests must include a valid API key in the `Authorization` header:
+Send this header on every request:
 
 ```bash
-Authorization: Bearer sk_live_...
+x-api-key: YOUR_API_KEY
 ```
 
-See [Authentication](/api-reference/authentication) for key types, scopes, and rotation.
+SDKs are coming soon. Right now the API is HTTP-first.
 
-## Request format
-
-- All request bodies must be JSON
-- Set `Content-Type: application/json` on `POST`, `PUT`, and `PATCH` requests
-
-## Response format
-
-All responses are JSON. Successful responses use an envelope with a `data` key. Error responses use an `error` key.
-
-**Success:**
-
-```json
-{
-  "data": { ... },
-  "meta": {
-    "requestId": "req_01j...",
-    "timestamp": "2025-01-01T00:00:00Z"
-  }
-}
-```
-
-**Error:**
-
-```json
-{
-  "error": {
-    "code": "not_found",
-    "message": "The requested resource does not exist.",
-    "param": null
-  }
-}
-```
-
-## HTTP status codes
-
-| Code | Meaning |
-|---|---|
-| `200` | OK |
-| `201` | Created |
-| `204` | No content (successful delete) |
-| `400` | Bad request |
-| `401` | Authentication failed |
-| `403` | Forbidden |
-| `404` | Not found |
-| `422` | Validation error |
-| `429` | Rate limit exceeded |
-| `500` | Internal server error |
-
-## Rate limits
-
-The API allows **1,000 requests per minute** per API key. Requests that exceed this limit receive a `429` response with a `Retry-After` header indicating how many milliseconds to wait.
-
-## In this section
+## Core pages
 
 <Cards>
-  <Card title="Authentication" href="/api-reference/authentication" description="API keys, scopes, and credential management endpoints." />
-  <Card title="Resources" href="/api-reference/resources" description="Create, read, update, and delete resources." />
-  <Card title="Events" href="/api-reference/events" description="Query the immutable event log." />
+  <Card title="Authentication" href="/api-reference/authentication" description="How to generate and safely use API keys." />
+  <Card title="Runner API" href="/api-reference/runner" description="Send prompts and get responses (regular or streaming)." />
+  <Card title="Conversation API" href="/api-reference/conversation" description="Memory-aware chats with conversation IDs." />
+  <Card title="Errors" href="/api-reference/errors" description="Status codes, error object, and retry guidance." />
 </Cards>
+
+## Universal request pattern
+
+Most requests use this JSON shape:
+
+```json
+{
+  "content": [
+    { "type": "text", "text": "Hello" }
+  ],
+  "variables": {
+    "name": "value"
+  }
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `content` | array | Yes | What you want the assistant to process |
+| `variables` | object | No | Values injected into your assistant prompt |
+| `meta` | object | No (conversation endpoints) | Labels for tracking/filtering conversations |
+
+## Universal success pattern
+
+Regular responses commonly include:
+
+```json
+{
+  "content": "Assistant response",
+  "model": "MODEL_NAME",
+  "input_tokens": 100,
+  "output_tokens": 80
+}
+```
+
+Streaming responses send output chunks instead of one final object.
+
+## `meta` in simple terms
+
+`meta` is extra context tags you define (for example `userId`, `projectId`, `channel`).
+It helps you filter and analyze conversations later.

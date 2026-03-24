@@ -1,4 +1,4 @@
-import { createMDX } from 'fumadocs-mdx/next';
+import { createMDX } from "fumadocs-mdx/next"
 
 /** @type {import('next').NextConfig} */
 const config = {
@@ -7,14 +7,14 @@ const config = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'storage.googleapis.com',
-        pathname: '/amarsia-assets/**',
+        protocol: "https",
+        hostname: "storage.googleapis.com",
+        pathname: "/amarsia-assets/**",
       },
     ],
   },
-};
+}
 
-const withMDX = createMDX();
+const withMDX = createMDX()
 
-export default withMDX(config);
+export default withMDX(config)

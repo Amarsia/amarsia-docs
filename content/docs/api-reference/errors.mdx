@@ -1,0 +1,61 @@
+---
+title: Errors
+description: HTTP status codes, error object fields, and practical handling rules.
+---
+
+## Error response shape
+
+When a request fails, response generally contains:
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "message": "content is required",
+    "param": "content",
+    "code": "missing_required_field"
+  }
+}
+```
+
+## Error object fields
+
+| Field | Type | Meaning |
+|---|---|---|
+| `type` | string | High-level error category |
+| `message` | string | Human-readable explanation |
+| `param` | string or null | Related request field |
+| `code` | string or null | Stable machine-readable code |
+
+## HTTP status code summary
+
+| Status | Name | Meaning | Recommended action |
+|---|---|---|---|
+| `200` | OK | Request succeeded | Use response |
+| `400` | Bad Request | Invalid request body/params | Fix payload |
+| `401` | Unauthorized | Missing/invalid API key | Fix key header |
+| `403` | Forbidden | Key valid but no access | Check permissions |
+| `404` | Not Found | Resource or path not found | Verify IDs/path |
+| `409` | Conflict | Request conflicts with existing state | Resolve conflict and retry |
+| `429` | Too Many Requests | Rate limit reached | Retry with exponential backoff |
+| `500`/`502`/`503`/`504` | Server Errors | Temporary server issue | Retry safely |
+
+## Error `type` values
+
+| Type | Meaning |
+|---|---|
+| `api_error` | Unexpected server-side error |
+| `invalid_request_error` | Request shape or parameters are invalid |
+| `auth_error` | Authentication/authorization issue |
+| `rate_limit_error` | Request limit exceeded |
+
+## Retry rules
+
+- Retry: `429`, `5xx`, network timeouts
+- Do not retry blindly: `400`, `401`, `403`, `404`
+- For streaming errors: retry once, then fallback to regular endpoint
+
+## Related
+
+- [Authentication](/api-reference/authentication)
+- [Runner API](/api-reference/runner)

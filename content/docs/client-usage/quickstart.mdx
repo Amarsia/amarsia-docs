@@ -1,0 +1,87 @@
+---
+title: Quickstart
+description: Send your first request in plain JSON and understand exactly what goes in and what comes back.
+---
+
+## Start here
+
+You only need 2 things:
+
+1. `API key`
+2. `deployment ID` (from your published assistant)
+
+<Callout type="info">
+SDKs are coming soon. For now, use plain HTTP requests from any language.
+</Callout>
+
+## The simplest request
+
+This is the minimum valid request body:
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Hello"
+    }
+  ]
+}
+```
+
+## The simplest API call
+
+```bash
+curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "content": [
+      { "type": "text", "text": "Hello" }
+    ]
+  }'
+```
+
+## What the API expects (input)
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `content` | array | Yes | What you send to the assistant |
+| `content[].type` | string | Yes | Input kind (`text`, `image`, `video`, `audio`, `url`) |
+| `content[].text` | string | Required for `text` | Your message text |
+| `content[].mime_type` | string | Required for files | File type like `image/jpeg` |
+| `content[].file_uri` | string | Required for files | Public URL of the file |
+| `variables` | object | No | Values for prompt variables |
+
+## What the API responds with (output)
+
+Regular endpoint returns:
+
+```json
+{
+  "content": "Hi! How can I help?",
+  "model": "MODEL_NAME",
+  "input_tokens": 12,
+  "output_tokens": 24
+}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `content` | string or object | Assistant output |
+| `model` | string | Model used |
+| `input_tokens` | number | Tokens used for input |
+| `output_tokens` | number | Tokens used for output |
+
+## Regular vs streaming
+
+- **Regular API**: full response at once  
+  `POST /v1/runner/{deployment_id}`
+- **Streaming API**: response arrives in chunks  
+  `POST /v1/runner/{deployment_id}/stream`
+
+## Related
+
+- [Conversation API usage](/client-usage/conversation-api)
+- [Multimodal usage](/client-usage/multimodal)
+- [Runner API reference](/api-reference/runner)

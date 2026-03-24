@@ -1,0 +1,99 @@
+---
+title: Runner API
+description: Main endpoint for sending input to a deployed assistant and getting output.
+---
+
+## What Runner API is
+
+Runner API is the core "ask assistant" API.
+
+You send `content`, assistant sends back output.
+
+## POST /v1/runner/\{deployment_id\}
+
+Use this when you want one complete response.
+
+### Request body
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `content` | array | Yes | User input items |
+| `variables` | object | No | Prompt variable values |
+
+### `content` item types
+
+| `type` | Required fields |
+|---|---|
+| `text` | `text` |
+| `image` | `mime_type`, `file_uri` |
+| `video` | `mime_type`, `file_uri` |
+| `audio` | `mime_type`, `file_uri` |
+| `url` | `mime_type`, `file_uri` |
+
+### Example request
+
+```bash
+curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "content": [
+      { "type": "text", "text": "Explain this in simple words." }
+    ],
+    "variables": {
+      "tone": "friendly"
+    }
+  }'
+```
+
+### Example response
+
+```json
+{
+  "content": "Sure. Here is a simple explanation...",
+  "model": "MODEL_NAME",
+  "input_tokens": 35,
+  "output_tokens": 72
+}
+```
+
+### Response fields
+
+| Field | Type | Meaning |
+|---|---|---|
+| `content` | string or object | Assistant output |
+| `model` | string | Model used to generate answer |
+| `input_tokens` | number | Input token usage |
+| `output_tokens` | number | Output token usage |
+
+## POST /v1/runner/\{deployment_id\}/stream
+
+Use this when you want output as it is generated.
+
+### Request body
+
+Same structure as regular endpoint.
+
+### Example request
+
+```bash
+curl -N https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/stream \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "content": [
+      { "type": "text", "text": "Stream this response." }
+    ]
+  }'
+```
+
+### Stream behavior
+
+- You receive chunks in order
+- Concatenate chunks to render full text
+- Best for chat UI and low-latency UX
+
+## Related
+
+- [Conversation API](/api-reference/conversation)
+- [Errors reference](/api-reference/errors)

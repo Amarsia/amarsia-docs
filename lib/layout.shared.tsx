@@ -1,8 +1,10 @@
-import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import Image from 'next/image';
+import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
+import Image from "next/image"
 
-const LOGO_LIGHT = 'https://storage.googleapis.com/amarsia-assets/amarsia-black.webp';
-const LOGO_DARK = 'https://storage.googleapis.com/amarsia-assets/amarsia-white.webp';
+const LOGO_LIGHT =
+  "https://storage.googleapis.com/amarsia-assets/amarsia-black.webp"
+const LOGO_DARK =
+  "https://storage.googleapis.com/amarsia-assets/amarsia-white.webp"
 
 export function baseOptions(): BaseLayoutProps {
   return {
@@ -17,7 +19,7 @@ export function baseOptions(): BaseLayoutProps {
             height={28}
             priority
             className="dark:hidden"
-            style={{ objectFit: 'contain' }}
+            style={{ objectFit: "contain" }}
           />
           {/* Dark mode logo */}
           <Image
@@ -27,23 +29,23 @@ export function baseOptions(): BaseLayoutProps {
             height={28}
             priority
             className="hidden dark:block"
-            style={{ objectFit: 'contain' }}
+            style={{ objectFit: "contain" }}
           />
         </div>
       ),
     },
     links: [
       {
-        text: 'Documentation',
-        url: '/',
-        active: 'nested-url',
+        text: "Documentation",
+        url: "/",
+        active: "nested-url",
       },
       {
-        text: 'API Reference',
-        url: '/api-reference',
-        active: 'nested-url',
+        text: "API Reference",
+        url: "/api-reference",
+        active: "nested-url",
       },
     ],
-    githubUrl: 'https://github.com/amarsia',
-  };
+    githubUrl: "https://github.com/amarsia",
+  }
 }

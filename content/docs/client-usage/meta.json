@@ -1,8 +1,9 @@
 {
   "title": "Client Usage",
   "pages": [
-    "index",
-    "javascript",
+    "quickstart",
+    "conversation-api",
+    "multimodal",
     "error-handling"
   ]
 }
