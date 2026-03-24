@@ -8,7 +8,7 @@ export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
       title: (
-        <>
+        <div className="py-2">
           {/* Light mode logo */}
           <Image
             src={LOGO_LIGHT}
@@ -29,7 +29,7 @@ export function baseOptions(): BaseLayoutProps {
             className="hidden dark:block"
             style={{ objectFit: 'contain' }}
           />
-        </>
+        </div>
       ),
     },
     links: [

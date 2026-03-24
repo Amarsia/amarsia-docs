@@ -113,7 +113,7 @@ Use the skeleton that matches the page type. Deviations are allowed when there i
 
 ## 6. Linking policy
 
-- Use relative paths for all internal links: `[Authentication](/docs/features/authentication)`.
+- Use relative paths for all internal links: `[Authentication](/features/authentication)`.
 - Every page must end with a `## Related` section linking to 2–4 relevant pages.
 - Do not create orphan pages. Ensure the page appears in `meta.json` before committing.
 - Do not use bare URLs in body text — always use named links.

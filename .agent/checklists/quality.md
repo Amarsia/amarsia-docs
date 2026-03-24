@@ -52,7 +52,7 @@ Run through this checklist before marking any documentation task complete. Items
 
 ## Links
 
-- [ ] All internal links use relative paths (`/docs/section/page`).
+- [ ] All internal links use relative paths (`/section/page`).
 - [ ] All internal links resolve to pages that exist.
 - [ ] No bare URLs in body text — all URLs are wrapped in named links.
 

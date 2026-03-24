@@ -1,13 +1,20 @@
 import { RootProvider } from 'fumadocs-ui/provider/next';
-import { Inter } from 'next/font/google';
+import { Lexend, Playfair_Display } from 'next/font/google';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
 
-const inter = Inter({
+const lexend = Lexend({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-lexend',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
+  weight: ['600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -20,9 +27,6 @@ export const metadata: Metadata = {
   },
   description:
     'Official Amarsia documentation — concepts, features, integrations, client usage, and API reference.',
-  // ─── Icons ───────────────────────────────────────────────────────────────
-  // Next.js also auto-discovers app/favicon.ico, app/icon.svg, app/apple-icon.png
-  // The entries below let you control rel/sizes/type explicitly if needed.
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -30,13 +34,12 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
-  // ─── Open Graph ──────────────────────────────────────────────────────────
   openGraph: {
     type: 'website',
     siteName: 'Amarsia Docs',
     images: [
       {
-        url: '/opengraph-image.png', // place a 1200×630 image at app/opengraph-image.png
+        url: '/opengraph-image.png',
         width: 1200,
         height: 630,
         alt: 'Amarsia Documentation',
@@ -50,8 +53,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={inter.variable}>
-      <body className="flex min-h-screen flex-col font-sans antialiased">
+    <html
+      lang='en'
+      suppressHydrationWarning
+      className={`${lexend.variable} ${playfair.variable}`}
+    >
+      <body className='flex min-h-screen flex-col antialiased'>
         <RootProvider theme={{ defaultTheme: 'system', enableSystem: true }}>
           {children}
         </RootProvider>

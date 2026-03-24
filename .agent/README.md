@@ -115,7 +115,7 @@ Both fields are **required**. They are used in the sidebar, page `<title>`, and 
 - Show the `Authorization` header in every API curl example.
 
 ### Links
-- Use relative paths for all internal links: `/docs/features/authentication`.
+- Use relative paths for all internal links: `/features/authentication`.
 - Every page must end with a `## Related` section with 2–4 internal links.
 - Never use bare URLs in body text.
 
