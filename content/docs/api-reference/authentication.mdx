@@ -1,49 +1,102 @@
 ---
 title: Authentication
-description: Use one API key header for every request.
+description: API key usage across SDK, React, and REST API tracks.
 ---
 
-## One rule
+## One rule for all tracks
 
-Every API request must include:
+Every request needs a valid API key. Get one from the [API Keys dashboard](https://amarsia.com/dash/api_keys).
 
-```bash
-x-api-key: YOUR_API_KEY
-```
+<TrackContent track="sdk">
 
-If this header is missing or invalid, request fails.
+<ApiReferenceBlock
+  title="amarsia.init(options)"
+  language="typescript"
+  code={`import { amarsia } from "@amarsia/sdk"
 
-## Where to get keys
+const client = amarsia.init({
+  apiKey: process.env.AMARSIA_API_KEY!,
+  deploymentId: "dep_123",
+})
 
-Create or revoke keys in:
+await client.run({
+  content: [{ type: "text", text: "Hello" }],
+})`}
+>
 
-- [API Keys dashboard](https://amarsia.com/dash/api_keys)
+Pass `apiKey` in `amarsia.init(...)`. The SDK adds the auth header on every request automatically — you never touch it again.
 
-## Simple request example
+| Option | Type | Required |
+|---|---|---|
+| `apiKey` | string | Yes |
+| `deploymentId` | string | Yes |
 
-```bash
-curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_API_KEY" \
+</ApiReferenceBlock>
+
+</TrackContent>
+
+<TrackContent track="react">
+
+<ApiReferenceBlock
+  title="amarsia.init(options)"
+  language="tsx"
+  code={`import { amarsia } from "@amarsia/sdk"
+import { useRun } from "@amarsia/react"
+
+const client = amarsia.init({
+  apiKey: process.env.NEXT_PUBLIC_AMARSIA_API_KEY!,
+  deploymentId: process.env.NEXT_PUBLIC_AMARSIA_DEPLOYMENT_ID!,
+})
+
+export function Demo() {
+  const { run } = useRun(client)
+  // ...
+}`}
+>
+
+React hooks use the same SDK client — pass `apiKey` once during `amarsia.init(...)` and all hooks inherit it.
+
+</ApiReferenceBlock>
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+<ApiReferenceBlock
+  method="POST"
+  path="/v1/runner/{deployment_id}"
+  language="bash"
+  code={`curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: YOUR_API_KEY" \\
   -d '{
-    "content": [
-      { "type": "text", "text": "Hello" }
-    ]
-  }'
-```
+    "content": [{ "type": "text", "text": "Hello" }]
+  }'`}
+>
+
+Send `x-api-key` on every request. No SDK, no setup — just headers.
+
+| Header | Required | Notes |
+|---|---|---|
+| `x-api-key` | Yes | Your secret key |
+| `Content-Type` | Yes | `application/json` |
+
+</ApiReferenceBlock>
+
+</TrackContent>
 
 ## Common auth errors
 
 | Status | Meaning | Fix |
 |---|---|---|
 | `401` | Missing or invalid key | Pass a valid key |
-| `403` | Key is valid but not allowed | Check project access/permissions |
+| `403` | Key valid but not allowed | Check project access/permissions |
 
 ## Security basics
 
-- Keep keys on server-side only
+- Keep keys server-side only
 - Never commit keys to git
-- Rotate key immediately if leaked
+- Rotate immediately if leaked
 
 ## Related
 

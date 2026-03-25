@@ -3,9 +3,9 @@
   "pages": [
     "index",
     "concepts",
-    "features",
-    "integrations",
     "client-usage",
-    "api-reference"
+    "api-reference",
+    "features",
+    "integrations"
   ]
 }

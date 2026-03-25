@@ -1,97 +1,183 @@
 ---
 title: Runner API
-description: Main endpoint for sending input to a deployed assistant and getting output.
+description: One-shot and streaming generation for SDK, React, and REST.
 ---
 
-## What Runner API is
+## What this does
 
-Runner API is the core "ask assistant" API.
+Send `content` → get generated output. Stateless — no memory between calls.
 
-You send `content`, assistant sends back output.
+## One-shot call
 
-## POST /v1/runner/\{deployment_id\}
+<TrackContent track="sdk">
 
-Use this when you want one complete response.
+<ApiReferenceBlock
+  title="client.run(options)"
+  language="typescript"
+  code={`const data = await client.run({
+  content: [{ type: "text", text: "Explain this in simple words." }],
+  variables: { TONE: "friendly" },
+})
 
-### Request body
+console.log(data.content)`}
+>
 
-| Field | Type | Required | Meaning |
+`client.run(...)` awaits and returns one complete response.
+
+| Option | Type | Required | Description |
 |---|---|---|---|
-| `content` | array | Yes | User input items |
-| `variables` | object | No | Prompt variable values |
+| `content` | `MessageContent[]` | Yes | Input items (`text`, `image`, `video`, `audio`, `url`) |
+| `variables` | object | No | Values injected into assistant instructions |
+| `deploymentId` | string | No | Override the default deployment for this call |
 
-### `content` item types
+</ApiReferenceBlock>
 
-| `type` | Required fields |
-|---|---|
-| `text` | `text` |
-| `image` | `mime_type`, `file_uri` |
-| `video` | `mime_type`, `file_uri` |
-| `audio` | `mime_type`, `file_uri` |
-| `url` | `mime_type`, `file_uri` |
+</TrackContent>
 
-### Example request
+<TrackContent track="react">
 
-```bash
-curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_API_KEY" \
+<ApiReferenceBlock
+  title="useRun(client)"
+  language="tsx"
+  code={`const { run, status, data, error } = useRun(client)
+
+await run({
+  content: [{ type: "text", text: "Write a short release note." }],
+})`}
+>
+
+`useRun(client)` returns reactive state that updates as the request progresses.
+
+| Return | Type | Meaning |
+|---|---|---|
+| `run` | function | Trigger the request |
+| `status` | `idle \| loading \| success \| error` | Current state |
+| `data` | response object | Latest full response |
+| `error` | error object | Typed error when request fails |
+
+</ApiReferenceBlock>
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+<ApiReferenceBlock
+  method="POST"
+  path="/v1/runner/{deployment_id}"
+  language="bash"
+  code={`curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: YOUR_API_KEY" \\
   -d '{
-    "content": [
-      { "type": "text", "text": "Explain this in simple words." }
-    ],
-    "variables": {
-      "tone": "friendly"
-    }
-  }'
-```
+    "content": [{ "type": "text", "text": "Explain this in simple words." }],
+    "variables": { "TONE": "friendly" }
+  }'`}
+>
 
-### Example response
+Returns a single JSON response when complete.
+
+| Body field | Type | Required | Description |
+|---|---|---|---|
+| `content` | array | Yes | Input items |
+| `variables` | object | No | Prompt variable overrides |
+
+</ApiReferenceBlock>
+
+</TrackContent>
+
+## Streaming call
+
+<TrackContent track="sdk">
+
+<ApiReferenceBlock
+  title="client.stream(options)"
+  language="typescript"
+  code={`const unsubscribe = client.stream.subscribe((state) => {
+  if (state.status === "streaming") {
+    process.stdout.write(state.live ?? "")
+  }
+  if (state.status === "success") {
+    console.log("\\n✓ Done:", state.data?.content)
+    unsubscribe()
+  }
+})
+
+await client.stream({
+  content: [{ type: "text", text: "Stream this response." }],
+})`}
+>
+
+`client.stream(...)` pushes tokens incrementally to subscribers.
+
+| State field | Meaning |
+|---|---|
+| `state.live` | Partial text as it streams in |
+| `state.data` | Complete response once done |
+| `state.status` | `idle \| loading \| streaming \| success \| error` |
+
+</ApiReferenceBlock>
+
+</TrackContent>
+
+<TrackContent track="react">
+
+<ApiReferenceBlock
+  title="useStream(client)"
+  language="tsx"
+  code={`const { stream, live, data, status } = useStream(client)
+
+await stream({
+  content: [{ type: "text", text: "Generate checklist." }],
+})
+
+// live updates token by token while streaming
+// data is the final complete response`}
+>
+
+`useStream(client)` is the best hook for token-by-token chat UI rendering.
+
+| Return | Meaning |
+|---|---|
+| `live` | Partial text as tokens arrive |
+| `data` | Final response after completion |
+| `status` | `idle \| loading \| streaming \| success \| error` |
+
+</ApiReferenceBlock>
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+<ApiReferenceBlock
+  method="POST"
+  path="/v1/runner/{deployment_id}/stream"
+  language="bash"
+  code={`curl -N https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/stream \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: YOUR_API_KEY" \\
+  -d '{
+    "content": [{ "type": "text", "text": "Stream this response." }]
+  }'`}
+>
+
+Use `-N` flag so curl doesn't buffer the response. Concatenate chunks to reconstruct the full output.
+
+</ApiReferenceBlock>
+
+</TrackContent>
+
+## Response shape
+
+Every response (run or stream final) returns:
 
 ```json
 {
-  "content": "Sure. Here is a simple explanation...",
-  "model": "MODEL_NAME",
-  "input_tokens": 35,
-  "output_tokens": 72
+  "content": "The assistant's output...",
+  "model": "model-name",
+  "input_tokens": 42,
+  "output_tokens": 61
 }
 ```
-
-### Response fields
-
-| Field | Type | Meaning |
-|---|---|---|
-| `content` | string or object | Assistant output |
-| `model` | string | Model used to generate answer |
-| `input_tokens` | number | Input token usage |
-| `output_tokens` | number | Output token usage |
-
-## POST /v1/runner/\{deployment_id\}/stream
-
-Use this when you want output as it is generated.
-
-### Request body
-
-Same structure as regular endpoint.
-
-### Example request
-
-```bash
-curl -N https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/stream \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_API_KEY" \
-  -d '{
-    "content": [
-      { "type": "text", "text": "Stream this response." }
-    ]
-  }'
-```
-
-### Stream behavior
-
-- You receive chunks in order
-- Concatenate chunks to render full text
-- Best for chat UI and low-latency UX
 
 ## Related
 

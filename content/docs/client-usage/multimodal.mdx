@@ -1,20 +1,19 @@
 ---
 title: Multimodal
-description: Send text and files together in one request so the assistant can understand everything at once.
+description: Send text and files together with SDK, React, or plain REST.
 ---
 
 ## Simple idea
 
-`content` is a list.
-Each list item is one thing you send:
+`content` is a list of inputs:
 
-- text message
-- image
-- video
-- audio
-- file URL (like PDF link)
+- `text`
+- `image`
+- `video`
+- `audio`
+- `url` (like PDF links)
 
-## Structure the API expects
+## Input types
 
 | Item `type` | Required fields | Example |
 |---|---|---|
@@ -24,7 +23,58 @@ Each list item is one thing you send:
 | `audio` | `mime_type`, `file_uri` | `{ "type": "audio", "mime_type": "audio/mpeg", "file_uri": "https://..." }` |
 | `url` | `mime_type`, `file_uri` | `{ "type": "url", "mime_type": "application/pdf", "file_uri": "https://..." }` |
 
-## Clear example
+<TrackContent track="sdk">
+
+## SDK example
+
+```ts
+const result = await client.run({
+  content: [
+    { type: "text", text: "Summarize this brochure and PDF." },
+    {
+      type: "image",
+      mime_type: "image/jpeg",
+      file_uri: "https://example.com/brochure-page.jpg",
+    },
+    {
+      type: "url",
+      mime_type: "application/pdf",
+      file_uri: "https://example.com/price-list.pdf",
+    },
+  ],
+})
+
+console.log(result.content)
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+## React example
+
+```tsx
+const { run, data, status } = useRun(client)
+
+await run({
+  content: [
+    { type: "text", text: "Explain this image and PDF to a beginner." },
+    { type: "image", mime_type: "image/jpeg", file_uri: imageUrl },
+    { type: "url", mime_type: "application/pdf", file_uri: pdfUrl },
+  ],
+})
+```
+
+Status and response are reactive in your component:
+
+- `status`
+- `data`
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+## REST API example
 
 ```json
 {
@@ -47,7 +97,15 @@ Each list item is one thing you send:
 }
 ```
 
-## Response shape (regular API)
+Use this body with:
+
+```bash
+POST /v1/runner/{deployment_id}
+```
+
+</TrackContent>
+
+## Response shape
 
 ```json
 {

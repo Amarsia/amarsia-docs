@@ -1,7 +1,9 @@
 ---
 title: API reference
-description: Simple, complete reference for request structure, response structure, and every core endpoint.
+description: Full method reference for JavaScript SDK, React hooks, and REST API.
 ---
+
+<TrackContent track="rest-api">
 
 ## Base URL
 
@@ -9,64 +11,78 @@ description: Simple, complete reference for request structure, response structur
 https://api.amarsia.com/v1
 ```
 
-All endpoint paths below are appended to this base URL.
+All endpoint paths below are appended to this base URL. Every request requires an `x-api-key` header.
 
-## Authentication
+</TrackContent>
 
-Send this header on every request:
+<TrackContent track="sdk">
 
-```bash
-x-api-key: YOUR_API_KEY
+## SDK package
+
+Install: `npm install @amarsia/sdk`  &nbsp;·&nbsp; [npm ↗](https://www.npmjs.com/package/@amarsia/sdk)
+
+Initialize once, use everywhere:
+
+```ts
+import { amarsia } from "@amarsia/sdk"
+
+const client = amarsia.init({
+  apiKey: process.env.AMARSIA_API_KEY!,
+  deploymentId: process.env.AMARSIA_DEPLOYMENT_ID!,
+})
 ```
 
-SDKs are coming soon. Right now the API is HTTP-first.
+</TrackContent>
 
-## Core pages
+<TrackContent track="react">
+
+## React package
+
+Install: `npm install @amarsia/react @amarsia/sdk`  &nbsp;·&nbsp; [npm ↗](https://www.npmjs.com/package/@amarsia/react)
+
+All hooks take the same `client` created by `amarsia.init(...)`:
+
+```tsx
+import { useRun, useStream, useConversation } from "@amarsia/react"
+```
+
+</TrackContent>
+
+## Reference pages
 
 <Cards>
-  <Card title="Authentication" href="/api-reference/authentication" description="How to generate and safely use API keys." />
-  <Card title="Runner API" href="/api-reference/runner" description="Send prompts and get responses (regular or streaming)." />
-  <Card title="Conversation API" href="/api-reference/conversation" description="Memory-aware chats with conversation IDs." />
-  <Card title="Errors" href="/api-reference/errors" description="Status codes, error object, and retry guidance." />
+  <Card title="Authentication" href="/api-reference/authentication" description="API keys and secure usage." />
+  <Card title="Runner API" href="/api-reference/runner" description="One-shot and streaming generation." />
+  <Card title="Conversation API" href="/api-reference/conversation" description="Stateful chat and history methods." />
+  <Card title="Errors" href="/api-reference/errors" description="Error shape, status codes, and retry rules." />
 </Cards>
 
-## Universal request pattern
-
-Most requests use this JSON shape:
+## Universal request shape
 
 ```json
 {
   "content": [
-    { "type": "text", "text": "Hello" }
+    { "type": "text", "text": "Your input here" }
   ],
   "variables": {
-    "name": "value"
+    "VARIABLE_NAME": "value"
   }
 }
 ```
 
 | Field | Type | Required | Meaning |
 |---|---|---|---|
-| `content` | array | Yes | What you want the assistant to process |
-| `variables` | object | No | Values injected into your assistant prompt |
-| `meta` | object | No (conversation endpoints) | Labels for tracking/filtering conversations |
+| `content` | array | Yes | Input items — text, image, video, audio, url |
+| `variables` | object | No | Values injected into assistant instructions |
+| `meta` | object | No | Custom labels for conversation tracking |
 
-## Universal success pattern
-
-Regular responses commonly include:
+## Universal response shape
 
 ```json
 {
-  "content": "Assistant response",
-  "model": "MODEL_NAME",
-  "input_tokens": 100,
-  "output_tokens": 80
+  "content": "Assistant output...",
+  "model": "model-name",
+  "input_tokens": 42,
+  "output_tokens": 61
 }
 ```
-
-Streaming responses send output chunks instead of one final object.
-
-## `meta` in simple terms
-
-`meta` is extra context tags you define (for example `userId`, `projectId`, `channel`).
-It helps you filter and analyze conversations later.

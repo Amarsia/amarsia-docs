@@ -11,7 +11,6 @@ export function baseOptions(): BaseLayoutProps {
     nav: {
       title: (
         <div className="py-2">
-          {/* Light mode logo */}
           <Image
             src={LOGO_LIGHT}
             alt="Amarsia"
@@ -21,7 +20,6 @@ export function baseOptions(): BaseLayoutProps {
             className="dark:hidden"
             style={{ objectFit: "contain" }}
           />
-          {/* Dark mode logo */}
           <Image
             src={LOGO_DARK}
             alt="Amarsia"

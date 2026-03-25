@@ -1,6 +1,6 @@
 ---
 title: Errors
-description: HTTP status codes, error object fields, and practical handling rules.
+description: Error object and retry handling for SDK, React, and REST tracks.
 ---
 
 ## Error response shape
@@ -27,7 +27,7 @@ When a request fails, response generally contains:
 | `param` | string or null | Related request field |
 | `code` | string or null | Stable machine-readable code |
 
-## HTTP status code summary
+## HTTP status summary
 
 | Status | Name | Meaning | Recommended action |
 |---|---|---|---|
@@ -49,7 +49,53 @@ When a request fails, response generally contains:
 | `auth_error` | Authentication/authorization issue |
 | `rate_limit_error` | Request limit exceeded |
 
-## Retry rules
+<TrackContent track="sdk">
+
+## SDK error handling
+
+```ts
+import { AmarsiaSdkError } from "@amarsia/sdk"
+
+try {
+  await client.run({
+    content: [{ type: "text", text: "Hello" }],
+  })
+} catch (error) {
+  if (error instanceof AmarsiaSdkError) {
+    console.error(error.status, error.code, error.message)
+  }
+}
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+## React error handling
+
+```tsx
+const { run, status, error } = useRun(client)
+
+if (status === "error") {
+  console.error(error?.message)
+}
+```
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+## REST retry rule helper
+
+```ts
+function shouldRetry(status: number) {
+  return status === 429 || status >= 500
+}
+```
+
+</TrackContent>
+
+## Retry rules (all tracks)
 
 - Retry: `429`, `5xx`, network timeouts
 - Do not retry blindly: `400`, `401`, `403`, `404`

@@ -1,11 +1,11 @@
 ---
 title: Error handling
-description: Understand common API errors in simple terms and handle them safely.
+description: Handle errors safely across SDK, React, and REST API integrations.
 ---
 
 ## Error shape
 
-When something fails, you usually get an error object like this:
+When something fails, this is the common REST error envelope:
 
 ```json
 {
@@ -26,7 +26,7 @@ When something fails, you usually get an error object like this:
 | `param` | Which input field caused the problem (if available) |
 | `code` | Optional machine-friendly error code |
 
-## Common cases
+## Common status codes
 
 | Status | What happened | What you should do |
 |---|---|---|
@@ -37,24 +37,68 @@ When something fails, you usually get an error object like this:
 | `429` | Too many requests | Retry with backoff |
 | `5xx` | Server problem | Retry after short delay |
 
-## Safe retry example
+<TrackContent track="sdk">
+
+## SDK try/catch
 
 ```typescript
+import { AmarsiaSdkError } from "@amarsia/sdk"
+
+try {
+  await client.run({
+    content: [{ type: "text", text: "Hello" }],
+  })
+} catch (error) {
+  if (error instanceof AmarsiaSdkError) {
+    console.error(error.status, error.code, error.message)
+  } else {
+    console.error(error)
+  }
+}
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+## React pattern
+
+Hooks expose `error` and `status`:
+
+```tsx
+const { run, status, error, data } = useRun(client)
+```
+
+UI rule:
+
+- show inline message when `status === "error"`
+- let users retry quickly
+- keep last good response if possible
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+## REST retry helper
+
+```ts
 async function withRetry<T>(requestFn: () => Promise<T>, maxAttempts = 3): Promise<T> {
-  let attempt = 0;
+  let attempt = 0
   while (true) {
     try {
-      return await requestFn();
+      return await requestFn()
     } catch (error: any) {
-      attempt += 1;
-      const status = error?.status ?? 0;
-      const shouldRetry = status === 429 || status >= 500 || status === 0;
-      if (!shouldRetry || attempt >= maxAttempts) throw error;
-      await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+      attempt += 1
+      const status = error?.status ?? 0
+      const shouldRetry = status === 429 || status >= 500 || status === 0
+      if (!shouldRetry || attempt >= maxAttempts) throw error
+      await new Promise((resolve) => setTimeout(resolve, attempt * 1000))
     }
   }
 }
 ```
+
+</TrackContent>
 
 ## Streaming fallback
 

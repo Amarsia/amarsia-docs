@@ -1,0 +1,244 @@
+---
+title: Assistant Runner
+description: Run your assistant once for a given task and get a response back.
+---
+
+## What this is
+
+The Runner is for **one-shot tasks** — you send input, the assistant processes it, you get output back. No memory, no state between calls.
+
+Good for things like:
+- Generating a summary, email, or report
+- Extracting structured data from a document
+- Answering a question based on provided context
+- Any automation that takes input and produces output
+
+---
+
+## Run and get a response
+
+<TrackContent track="sdk">
+
+```ts
+import client from "./lib/amarsia"
+
+const result = await client.run({
+  content: [{ type: "text", text: "Write a 3-sentence product description for a noise-cancelling headphone." }],
+})
+
+console.log(result.content)
+// → "Experience crystal-clear audio with our noise-cancelling..."
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+```tsx
+"use client"
+import { useRun } from "@amarsia/react"
+import client from "@/lib/amarsia"
+
+export function RunnerDemo() {
+  const { run, status, data, error } = useRun(client)
+
+  return (
+    <div>
+      <button
+        disabled={status === "loading"}
+        onClick={() =>
+          void run({
+            content: [{ type: "text", text: "Write a product description." }],
+          })
+        }
+      >
+        {status === "loading" ? "Running..." : "Run"}
+      </button>
+
+      {data && <pre>{String(data.content)}</pre>}
+      {error && <p className="text-red-500">{error.message}</p>}
+    </div>
+  )
+}
+```
+
+The hook gives you reactive state — `status`, `data`, and `error` update automatically as the request progresses.
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+```bash
+curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "content": [
+      { "type": "text", "text": "Write a 3-sentence product description." }
+    ]
+  }'
+```
+
+</TrackContent>
+
+---
+
+## Response shape
+
+Every run returns the same structure:
+
+```json
+{
+  "content": "Experience crystal-clear audio...",
+  "model": "model-name",
+  "input_tokens": 42,
+  "output_tokens": 61
+}
+```
+
+| Field | Type | What it is |
+|---|---|---|
+| `content` | string | The assistant's response |
+| `model` | string | Which model processed the request |
+| `input_tokens` | number | Tokens consumed for your input |
+| `output_tokens` | number | Tokens consumed for the response |
+
+---
+
+## Streaming response
+
+Instead of waiting for the full response, stream it token by token. Great for showing output live in the UI.
+
+<TrackContent track="sdk">
+
+```ts
+const unsubscribe = client.stream.subscribe((state) => {
+  if (state.status === "streaming") {
+    process.stdout.write(state.live ?? "")
+  }
+  if (state.status === "success") {
+    console.log("\n✓ Done:", state.data?.content)
+    unsubscribe()
+  }
+})
+
+await client.stream({
+  content: [{ type: "text", text: "Write a detailed product spec." }],
+})
+```
+
+- `state.live` — partial text as it streams in
+- `state.data` — the complete response once done
+
+</TrackContent>
+
+<TrackContent track="react">
+
+```tsx
+"use client"
+import { useStream } from "@amarsia/react"
+import client from "@/lib/amarsia"
+
+export function StreamDemo() {
+  const { stream, live, data, status } = useStream(client)
+
+  return (
+    <div>
+      <button
+        disabled={status === "loading" || status === "streaming"}
+        onClick={() =>
+          void stream({
+            content: [{ type: "text", text: "Write a detailed product spec." }],
+          })
+        }
+      >
+        Stream
+      </button>
+
+      {/* live updates token by token while streaming */}
+      {(live || data) && (
+        <pre>{live ?? String(data?.content)}</pre>
+      )}
+    </div>
+  )
+}
+```
+
+`live` updates in real time as tokens arrive. Once complete, `data` holds the full response.
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+Add `/stream` to the endpoint and use `curl -N` to receive the chunked response:
+
+```bash
+curl -N https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/stream \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "content": [{ "type": "text", "text": "Write a detailed product spec." }]
+  }'
+```
+
+The `-N` flag disables output buffering so chunks render as they arrive. Concatenate them to reconstruct the full response.
+
+</TrackContent>
+
+---
+
+## With variables
+
+Pass dynamic data into your assistant's instructions:
+
+<TrackContent track="sdk">
+
+```ts
+const result = await client.run({
+  content: [{ type: "text", text: "Draft a support reply." }],
+  variables: {
+    CLIENT_NAME: "Sarah",
+    ISSUE_TYPE: "billing",
+  },
+})
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+```tsx
+await run({
+  content: [{ type: "text", text: "Draft a support reply." }],
+  variables: {
+    CLIENT_NAME: "Sarah",
+    ISSUE_TYPE: "billing",
+  },
+})
+```
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+```json
+{
+  "content": [{ "type": "text", "text": "Draft a support reply." }],
+  "variables": {
+    "CLIENT_NAME": "Sarah",
+    "ISSUE_TYPE": "billing"
+  }
+}
+```
+
+</TrackContent>
+
+See [Quickstart — Variables](/client-usage/quickstart#variables) for how variables work.
+
+---
+
+## Next steps
+
+- [Conversations](/client-usage/conversations) — need the assistant to remember previous messages? Use the Conversation API
+- [Multimodal](/client-usage/multimodal) — pass images, PDFs, or audio as input
+- [Runner API reference](/api-reference/runner) — full method details

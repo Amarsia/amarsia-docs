@@ -1,14 +1,16 @@
 import defaultMdxComponents from "fumadocs-ui/mdx"
 import type { MDXComponents } from "mdx/types"
 
-/**
- * Central MDX component registry.
- * Add custom components here to make them available in all MDX files
- * without needing to import them individually.
- */
+import { ApiReferenceBlock } from "@/components/api-reference"
+import { TrackContent, TrackHint, TrackSelector } from "@/components/docs-track"
+
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
     ...defaultMdxComponents,
+    ApiReferenceBlock,
+    TrackSelector,
+    TrackContent,
+    TrackHint,
     ...components,
   }
 }

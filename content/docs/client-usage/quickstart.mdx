@@ -1,87 +1,223 @@
 ---
 title: Quickstart
-description: Send your first request in plain JSON and understand exactly what goes in and what comes back.
+description: Get set up and send your first request in minutes.
 ---
 
-## Start here
+## What you need
 
-You only need 2 things:
+Two things before you write any code:
 
-1. `API key`
-2. `deployment ID` (from your published assistant)
+**API Key** — your secret credential for authenticating requests.
 
-<Callout type="info">
-SDKs are coming soon. For now, use plain HTTP requests from any language.
-</Callout>
+Get it from the [Amarsia dashboard](https://amarsia.com/dash/api_keys) under **API Keys**. Store it as an environment variable — never hardcode it.
 
-## The simplest request
+```bash
+AMARSIA_API_KEY=your_key_here
+```
 
-This is the minimum valid request body:
+**Deployment ID** — identifies which assistant to run. In Amarsia, you build and deploy assistants. Each deployed assistant has its own Deployment ID. Find it in the assistant's **Deploy** tab in the dashboard.
+
+```bash
+AMARSIA_DEPLOYMENT_ID=dep_abc123
+```
+
+---
+
+## Install
+
+<TrackContent track="sdk">
+
+```bash
+npm install @amarsia/sdk
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+```bash
+npm install @amarsia/react @amarsia/sdk
+```
+
+Both packages are needed. `@amarsia/sdk` is the core client, `@amarsia/react` wraps it with hooks.
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+No package needed. Use any HTTP client — `curl`, `fetch`, `axios`, whatever you have.
+
+Base URL for all requests:
+
+```text
+https://api.amarsia.com/v1
+```
+
+</TrackContent>
+
+---
+
+## Initialize the client
+
+<TrackContent track="sdk">
+
+Create the client once and reuse it everywhere:
+
+```ts
+import { amarsia } from "@amarsia/sdk"
+
+const client = amarsia.init({
+  apiKey: process.env.AMARSIA_API_KEY!,
+  deploymentId: process.env.AMARSIA_DEPLOYMENT_ID!,
+})
+
+export default client
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+Create the client in a shared file, then import it into your components:
+
+```ts
+// lib/amarsia.ts
+import { amarsia } from "@amarsia/sdk"
+
+const client = amarsia.init({
+  apiKey: process.env.NEXT_PUBLIC_AMARSIA_API_KEY!,
+  deploymentId: process.env.NEXT_PUBLIC_AMARSIA_DEPLOYMENT_ID!,
+})
+
+export default client
+```
+
+> **Note:** Use `NEXT_PUBLIC_` prefix only if the key is safe to expose client-side. For sensitive keys, call Amarsia from a server action or API route instead.
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+No initialization needed. Just include these headers on every request:
+
+```bash
+Content-Type: application/json
+x-api-key: YOUR_API_KEY
+```
+
+</TrackContent>
+
+---
+
+## Variables
+
+Your assistant's system instructions can have dynamic slots called **variables**. They let you inject real data into the prompt at runtime — things like a user's name, account info, or any context the assistant needs.
+
+**Where to find them:** Open your assistant in the dashboard and check the system instructions. Variables are always written in `UPPER_CASE_WITH_UNDERSCORES` like `CLIENT_EMAIL` or `PRODUCT_NAME`.
+
+**How to pass them:**
+
+<TrackContent track="sdk">
+
+```ts
+const result = await client.run({
+  content: [{ type: "text", text: "Help this customer." }],
+  variables: {
+    CLIENT_EMAIL: "jane@example.com",
+    PLAN_NAME: "Pro",
+  },
+})
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+```tsx
+await run({
+  content: [{ type: "text", text: "Help this customer." }],
+  variables: {
+    CLIENT_EMAIL: "jane@example.com",
+    PLAN_NAME: "Pro",
+  },
+})
+```
+
+</TrackContent>
+
+<TrackContent track="rest-api">
 
 ```json
 {
-  "content": [
-    {
-      "type": "text",
-      "text": "Hello"
-    }
-  ]
+  "content": [{ "type": "text", "text": "Help this customer." }],
+  "variables": {
+    "CLIENT_EMAIL": "jane@example.com",
+    "PLAN_NAME": "Pro"
+  }
 }
 ```
 
-## The simplest API call
+</TrackContent>
+
+The variable names must match exactly what's in your assistant's instructions. If there's a mismatch, the slot will be left blank.
+
+---
+
+## Your first request
+
+<TrackContent track="sdk">
+
+```ts
+import client from "./lib/amarsia"
+
+const result = await client.run({
+  content: [{ type: "text", text: "Say hello." }],
+})
+
+console.log(result.content)
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+```tsx
+"use client"
+import { useRun } from "@amarsia/react"
+import client from "@/lib/amarsia"
+
+export function HelloButton() {
+  const { run, status, data } = useRun(client)
+
+  return (
+    <div>
+      <button onClick={() => void run({ content: [{ type: "text", text: "Say hello." }] })}>
+        Go
+      </button>
+      {status === "loading" && <p>Thinking...</p>}
+      {data && <p>{String(data.content)}</p>}
+    </div>
+  )
+}
+```
+
+</TrackContent>
+
+<TrackContent track="rest-api">
 
 ```bash
 curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_API_KEY" \
-  -d '{
-    "content": [
-      { "type": "text", "text": "Hello" }
-    ]
-  }'
+  -d '{ "content": [{ "type": "text", "text": "Say hello." }] }'
 ```
 
-## What the API expects (input)
+</TrackContent>
 
-| Field | Type | Required | Meaning |
-|---|---|---|---|
-| `content` | array | Yes | What you send to the assistant |
-| `content[].type` | string | Yes | Input kind (`text`, `image`, `video`, `audio`, `url`) |
-| `content[].text` | string | Required for `text` | Your message text |
-| `content[].mime_type` | string | Required for files | File type like `image/jpeg` |
-| `content[].file_uri` | string | Required for files | Public URL of the file |
-| `variables` | object | No | Values for prompt variables |
+---
 
-## What the API responds with (output)
+## Next steps
 
-Regular endpoint returns:
-
-```json
-{
-  "content": "Hi! How can I help?",
-  "model": "MODEL_NAME",
-  "input_tokens": 12,
-  "output_tokens": 24
-}
-```
-
-| Field | Type | Meaning |
-|---|---|---|
-| `content` | string or object | Assistant output |
-| `model` | string | Model used |
-| `input_tokens` | number | Tokens used for input |
-| `output_tokens` | number | Tokens used for output |
-
-## Regular vs streaming
-
-- **Regular API**: full response at once  
-  `POST /v1/runner/{deployment_id}`
-- **Streaming API**: response arrives in chunks  
-  `POST /v1/runner/{deployment_id}/stream`
-
-## Related
-
-- [Conversation API usage](/client-usage/conversation-api)
-- [Multimodal usage](/client-usage/multimodal)
-- [Runner API reference](/api-reference/runner)
+- [Assistant Runner](/client-usage/assistant-runner) — run your assistant and handle the response
+- [Conversations](/client-usage/conversations) — build a stateful chatbot
+- [Multimodal](/client-usage/multimodal) — send images, PDFs, audio alongside text

@@ -1,154 +1,165 @@
 ---
 title: Conversation API
-description: Start chat memory, continue chats, fetch messages, and list conversations.
+description: Stateful chat references for SDK, React, and REST API.
 ---
 
-## What this API is for
+## What this does
 
-Use this when chat should remember earlier messages.
+Keeps multi-turn memory with conversation IDs. Each message in the same thread shares context with prior turns.
 
-You do not need to build your own conversation storage.
+## Start conversation
 
-## POST /v1/runner/\{deployment_id\}/conversation
+<TrackContent track="sdk">
 
-Creates a new conversation.
+<ApiReferenceBlock
+  title="conversation.run(options)"
+  language="typescript"
+  code={`const conversation = client.conversation
+conversation.start()
 
-### Request body
+await conversation.run({
+  content: [{ type: "text", text: "Hi, I need help." }],
+  meta: { userId: "user_123" },
+})
 
-| Field | Type | Required | Meaning |
+console.log(conversation.id)    // "conv_abc123"
+console.log(conversation.messages)`}
+>
+
+Call `conversation.start()` to begin a new thread. The ID is created on the first message.
+
+| Option | Type | Required | Description |
 |---|---|---|---|
-| `content` | array | Yes | First user message |
-| `meta` | object | No | Your custom labels |
-| `variables` | object | No | Prompt variable values |
+| `content` | `MessageContent[]` | Yes | First message |
+| `meta` | object | No | Custom labels for analytics/filtering |
+| `variables` | object | No | Injected into assistant instructions |
+| `historyLimit` | number | No | Max past messages to include as context |
 
-### Example request
+</ApiReferenceBlock>
 
-```bash
-curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/conversation \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_API_KEY" \
+</TrackContent>
+
+<TrackContent track="react">
+
+<ApiReferenceBlock
+  title="useConversation(client)"
+  language="tsx"
+  code={`const { conversation, id, messages, status } = useConversation(client)
+
+await conversation.stream({
+  content: [{ type: "text", text: "Start support chat." }],
+})
+
+console.log(id)       // "conv_abc123"
+console.log(messages) // [{ role: "user", ... }, { role: "assistant", ... }]`}
+>
+
+`useConversation(client)` manages thread state reactively. `messages` updates after each turn.
+
+| Return | Meaning |
+|---|---|
+| `conversation` | Conversation controller (same API as SDK) |
+| `id` | Current conversation ID (null before first message) |
+| `messages` | Reactive array of all turns |
+| `status` | `idle \| loading \| streaming \| success \| error` |
+
+</ApiReferenceBlock>
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+<ApiReferenceBlock
+  method="POST"
+  path="/v1/runner/{deployment_id}/conversation"
+  language="bash"
+  code={`curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/conversation \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: YOUR_API_KEY" \\
   -d '{
-    "content": [
-      { "type": "text", "text": "Hi, I need help with billing." }
-    ]
-  }'
-```
+    "content": [{ "type": "text", "text": "Hi, I need help." }],
+    "meta": { "userId": "user_123" }
+  }'`}
+>
 
-### Example response
+Creates a new conversation and returns `conversation_id`. Save it — every follow-up message needs it.
 
-```json
-{
-  "conversation_id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "Billing support",
-  "content": "Sure. I can help with billing.",
-  "input_tokens": 14,
-  "output_tokens": 20
-}
-```
+</ApiReferenceBlock>
 
-## POST /v1/runner/\{deployment_id\}/conversation/stream
+</TrackContent>
 
-Continues an existing conversation in streaming mode.
+## Continue conversation
 
-### Request body
+<TrackContent track="sdk">
 
-| Field | Type | Required | Meaning |
-|---|---|---|---|
-| `conversation_id` | string | Yes | Existing conversation ID |
-| `content` | array | Yes | New user message |
-| `history_limit` | number | No | Number of previous turns to include |
+<ApiReferenceBlock
+  title="conversation.stream(options)"
+  language="typescript"
+  code={`await client.conversation.stream({
+  content: [{ type: "text", text: "Continue this chat." }],
+  historyLimit: 10,
+})`}
+>
 
-### Example request
+The SDK tracks the ID automatically. Just keep calling `conversation.run(...)` or `conversation.stream(...)` in the same thread.
 
-```bash
-curl -N https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/conversation/stream \
-  -H "Content-Type: application/json" \
-  -H "x-api-key: YOUR_API_KEY" \
+</ApiReferenceBlock>
+
+</TrackContent>
+
+<TrackContent track="react">
+
+<ApiReferenceBlock
+  title="conversation.stream(options)"
+  language="tsx"
+  code={`await conversation.stream({
+  content: [{ type: "text", text: "Please summarize in 2 bullets." }],
+  historyLimit: 10,
+})`}
+>
+
+The hook tracks the thread ID for you. `messages` and `status` update reactively after each turn.
+
+</ApiReferenceBlock>
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+<ApiReferenceBlock
+  method="POST"
+  path="/v1/runner/{deployment_id}/conversation/stream"
+  language="bash"
+  code={`curl -N https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/conversation/stream \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: YOUR_API_KEY" \\
   -d '{
-    "conversation_id": "550e8400-e29b-41d4-a716-446655440000",
-    "content": [
-      { "type": "text", "text": "Please summarize in 2 bullets." }
-    ],
-    "history_limit": 5
-  }'
-```
+    "conversation_id": "conv_abc123",
+    "content": [{ "type": "text", "text": "Continue this chat." }],
+    "history_limit": 10
+  }'`}
+>
 
-## GET /v1/runner/conversation/\{conversation_id\}/messages
+`conversation_id` is required on every follow-up. Without it, a new thread starts.
 
-Gets paginated messages for one conversation.
+| Body field | Type | Required |
+|---|---|---|
+| `conversation_id` | string | Yes (continuation) |
+| `content` | array | Yes |
+| `history_limit` | number | No |
 
-### Query params
+</ApiReferenceBlock>
 
-| Param | Type | Required | Meaning |
-|---|---|---|---|
-| `page` | number | No | Page number (default `1`) |
-| `page_size` | number | No | Items per page (default `20`) |
+</TrackContent>
 
-### Example response
+## Fetch history
 
-```json
-{
-  "items": [
-    {
-      "id": "msg_1",
-      "role": "user",
-      "content": "Hi",
-      "created_at": "2026-03-24T09:00:00Z"
-    },
-    {
-      "id": "msg_2",
-      "role": "assistant",
-      "content": "Hello! How can I help?",
-      "created_at": "2026-03-24T09:00:02Z"
-    }
-  ],
-  "total": 2,
-  "page": 1,
-  "page_size": 20,
-  "has_more": false
-}
-```
+- Messages: `GET /v1/runner/conversation/{conversation_id}/messages?page=1&page_size=20`
+- All threads: `GET /v1/runner/conversations?page=1&page_size=20`
 
-## GET /v1/runner/conversations
+## `meta` — tagging conversations
 
-Lists conversations (paginated).
-
-### Query params
-
-| Param | Type | Required | Meaning |
-|---|---|---|---|
-| `page` | number | No | Page number |
-| `page_size` | number | No | Items per page |
-| any `meta` key | string | No | Filter conversations by metadata |
-
-### Example response
-
-```json
-{
-  "items": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "name": "Billing support",
-      "meta": {
-        "userId": "user_123",
-        "projectId": "project_456"
-      },
-      "created_at": "2026-03-24T09:00:00Z",
-      "updated_at": "2026-03-24T09:01:00Z"
-    }
-  ],
-  "total": 1,
-  "page": 1,
-  "page_size": 20,
-  "has_more": false
-}
-```
-
-## What is `meta`?
-
-`meta` is optional key-value data you attach to conversations.
-
-Example:
+Attach custom labels for filtering and analytics:
 
 ```json
 {
@@ -160,9 +171,7 @@ Example:
 }
 ```
 
-Use `meta` for filtering, analytics, and routing.
-
 ## Related
 
-- [Conversation usage guide](/client-usage/conversation-api)
+- [Conversations usage guide](/client-usage/conversations)
 - [Errors reference](/api-reference/errors)

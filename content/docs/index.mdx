@@ -1,34 +1,32 @@
 ---
 title: Introduction
-description: Learn core concepts, integration patterns, and API flows to build reliable AI automation agents with Amarsia.
+description: Build and integrate AI assistants with Amarsia.
 ---
 
-## Build production AI without platform overhead
+Amarsia is a platform to build, deploy, and run AI assistants. You design your assistant in the dashboard — prompt, tools, knowledge — deploy it, and get an API to run it from any app.
 
-Amarsia gives you one place to build, test, deploy, and monitor AI assistants. You do not have to stitch together separate systems for prompts, tools, memory, and logs, then rebuild everything when requirements change.
+## <img src="https://storage.googleapis.com/amarsia-assets/NPM.png" alt="npm" width="36" height="24" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '0.45rem', marginBottom: '0.2rem' }} />npm packages
 
-You define your assistant once, deploy a version, and integrate it through API. When you improve prompts, tools, or context, you ship a new version without rewriting your app integration.
+| Package | Install | Description |
+|---|---|---|
+| <a href="https://www.npmjs.com/package/@amarsia/sdk" target="_blank" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><img src="https://storage.googleapis.com/amarsia-assets/NPM.png" alt="npm" width="24" height="16" style={{ display: 'block', flexShrink: 0 }} />@amarsia/sdk</a> | `npm install @amarsia/sdk` | TypeScript/JavaScript client for run, stream, and conversations |
+| <a href="https://www.npmjs.com/package/@amarsia/react" target="_blank" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><img src="https://storage.googleapis.com/amarsia-assets/NPM.png" alt="npm" width="24" height="16" style={{ display: 'block', flexShrink: 0 }} />@amarsia/react</a> | `npm install @amarsia/react @amarsia/sdk` | React hooks built on the SDK |
+
+## Dashboard — start building
+
+Start building your assistant or automation on the Amarsia dashboard.
+
+- [Create assistant](https://amarsia.com/dash/assistants/new) — build a new AI assistant, set system instructions, attach knowledge, and connect actions
+- [Create knowledge base](https://amarsia.com/dash/knowledge-base) — upload documents or URLs your assistant can reference when answering
+- [Create action](https://amarsia.com/dash/actions/new) — connect external APIs or MCP servers your assistant can call as tools
+- [Create API key](https://amarsia.com/dash/api_keys) — generate credentials to authenticate requests from your app
 
 ## Start here
 
 <Cards>
-  <Card title="Concepts" href="/concepts" description="Understand Assistants, Knowledge Base, Actions, Usage, and API keys in plain language." />
-  <Card title="Client usage" href="/client-usage/quickstart" description="Use Amarsia APIs in real apps with clear request patterns and implementation guidance." />
-  <Card title="API reference" href="/api-reference" description="Exact endpoints, request formats, and response examples for production integration." />
-  <Card title="Features" href="/features" description="Navigate core dashboard areas and jump straight to build flows." />
-  <Card title="Integrations" href="/integrations" description="Integration catalog status and what is coming next." />
+  <Card title="Concepts" href="/concepts" description="What assistants, knowledge bases, and actions are — in plain language." />
+  <Card title="Client usage" href="/client-usage/quickstart" description="Install, authenticate, and send your first request in minutes." />
+  <Card title="API reference" href="/api-reference" description="Full method reference for SDK, React hooks, and REST endpoints." />
+  <Card title="Features" href="/features" description="Dashboard areas — where to build, test, and deploy." />
+  <Card title="Integrations" href="/integrations" description="Integration catalog and what's coming next." />
 </Cards>
-
-## Suggested path
-
-1. Read [Concepts](/concepts) so the product model is clear.
-2. Follow [Client usage](/client-usage/quickstart) to choose API patterns for your app.
-3. Use [API reference](/api-reference) while implementing production calls.
-
-## Quick links to build
-
-- [Create assistant](https://amarsia.com/dash/assistants/new)
-- [Create knowledge base](https://amarsia.com/dash/knowledge-base)
-- [Create action](https://amarsia.com/dash/actions/new)
-- [Manage MCP servers](https://amarsia.com/dash/actions)
-- [Create API key](https://amarsia.com/dash/api_keys)

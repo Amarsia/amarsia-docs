@@ -1,0 +1,261 @@
+---
+title: Conversations
+description: Build a chatbot — an assistant that remembers the full conversation history.
+---
+
+## What this is
+
+Conversations are for **multi-turn chat** — the assistant remembers what was said earlier in the same thread. Think customer support bots, AI assistants, interactive flows.
+
+Every conversation has an ID. You use that ID to keep messages in the same thread. The assistant uses previous messages as context when it replies.
+
+---
+
+## Step 1 — Start a conversation
+
+Send the first message. A new conversation ID is created automatically.
+
+<TrackContent track="sdk">
+
+```ts
+import client from "./lib/amarsia"
+
+const conversation = client.conversation
+
+// marks the start of a new thread
+conversation.start()
+
+await conversation.run({
+  content: [{ type: "text", text: "Hi! I need help with my order." }],
+})
+
+console.log(conversation.id)
+// → "conv_abc123"
+
+console.log(conversation.messages)
+// → [{ role: "user", ... }, { role: "assistant", ... }]
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+```tsx
+"use client"
+import { useConversation } from "@amarsia/react"
+import client from "@/lib/amarsia"
+
+export function Chat() {
+  const { conversation, id, messages, status } = useConversation(client)
+
+  async function send(text: string) {
+    await conversation.stream({
+      content: [{ type: "text", text }],
+    })
+  }
+
+  return (
+    <div>
+      <div>
+        {messages.map((msg, i) => (
+          <div key={i}>
+            <strong>{msg.role}:</strong> {String(msg.content)}
+          </div>
+        ))}
+      </div>
+      <button onClick={() => void send("Hi! I need help with my order.")}>
+        Start
+      </button>
+    </div>
+  )
+}
+```
+
+`useConversation` manages the thread state. `messages` is a reactive list of all turns so far.
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+```bash
+curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/conversation \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "content": [{ "type": "text", "text": "Hi! I need help with my order." }]
+  }'
+```
+
+Save the `conversation_id` from the response — you'll need it for all follow-up messages.
+
+```json
+{
+  "conversation_id": "conv_abc123",
+  "content": "Of course! What's your order number?",
+  ...
+}
+```
+
+</TrackContent>
+
+---
+
+## Step 2 — Continue the conversation
+
+Send follow-up messages in the same thread. The assistant uses all previous messages as context.
+
+<TrackContent track="sdk">
+
+```ts
+// no need to call conversation.start() again — same thread continues
+
+await conversation.run({
+  content: [{ type: "text", text: "My order number is #4821." }],
+})
+
+await conversation.run({
+  content: [{ type: "text", text: "It still hasn't arrived after 10 days." }],
+})
+```
+
+The SDK automatically tracks the conversation ID and sends it with each request.
+
+</TrackContent>
+
+<TrackContent track="react">
+
+```tsx
+// just keep calling send() — the hook handles the ID for you
+
+await conversation.run({
+  content: [{ type: "text", text: "My order number is #4821." }],
+})
+```
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+Pass `conversation_id` in every follow-up request:
+
+```bash
+curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/conversation \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "conversation_id": "conv_abc123",
+    "content": [{ "type": "text", "text": "My order number is #4821." }]
+  }'
+```
+
+</TrackContent>
+
+---
+
+## Streaming in conversation
+
+Use streaming for live token-by-token output — better UX for chat interfaces.
+
+<TrackContent track="sdk">
+
+```ts
+await conversation.stream({
+  content: [{ type: "text", text: "What are my options?" }],
+  historyLimit: 10,
+})
+```
+
+`historyLimit` caps how many past messages are included in context. Default is all messages.
+
+</TrackContent>
+
+<TrackContent track="react">
+
+```tsx
+await conversation.stream({
+  content: [{ type: "text", text: "What are my options?" }],
+  historyLimit: 10,
+})
+```
+
+The `live` field on the hook updates token by token while streaming.
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+```bash
+curl -N https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/conversation/stream \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "conversation_id": "conv_abc123",
+    "content": [{ "type": "text", "text": "What are my options?" }],
+    "history_limit": 10
+  }'
+```
+
+</TrackContent>
+
+---
+
+## Step 3 — Fetch message history
+
+Retrieve all past messages in a conversation:
+
+<TrackContent track="sdk">
+
+```ts
+const history = await client.conversation.loadMessages({
+  page: 1,
+  pageSize: 20,
+})
+
+console.log(history.messages)
+```
+
+</TrackContent>
+
+<TrackContent track="react">
+
+```tsx
+const { loadMessages, messages } = useConversation(client)
+
+await loadMessages({ page: 1, pageSize: 20 })
+```
+
+</TrackContent>
+
+<TrackContent track="rest-api">
+
+```bash
+GET /v1/runner/conversation/conv_abc123/messages?page=1&page_size=20
+```
+
+</TrackContent>
+
+---
+
+## Tagging conversations with `meta`
+
+Attach custom labels to a conversation for filtering and analytics later. Can only be sent at the first conversation message.
+
+```json
+{
+  "meta": {
+    "userId": "user_123",
+    "channel": "web-chat",
+    "topic": "order-support"
+  }
+}
+```
+
+Pass `meta` only in the first message of the conversation. Retrieve conversations by `meta` fields from the dashboard or API.
+
+---
+
+## Next steps
+
+- [Multimodal](/client-usage/multimodal) — attach images or files to conversation messages
+- [Conversation API reference](/api-reference/conversation) — full method details
+- [Error handling](/client-usage/error-handling) — handle failures and retries

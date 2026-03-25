@@ -2,7 +2,8 @@
   "title": "Client Usage",
   "pages": [
     "quickstart",
-    "conversation-api",
+    "assistant-runner",
+    "conversations",
     "multimodal",
     "error-handling"
   ]
