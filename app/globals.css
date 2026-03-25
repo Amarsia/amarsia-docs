@@ -161,6 +161,55 @@ aside a[aria-current='true']::before {
   text-decoration-color: #60a5fa;
 }
 
+/* Tables: Safari-safe overflow without boxing layout */
+.am-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.am-table-wrap > table {
+  min-width: 100%;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.am-table-wrap > table th,
+.am-table-wrap > table td {
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.am-table-wrap > table :where(code) {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.am-install-cmd {
+  font-family: ui-monospace, 'Cascadia Code', Menlo, Monaco, Consolas, monospace;
+  font-size: 0.95em;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.am-heading-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  line-height: 1;
+}
+
+.am-heading-with-icon img {
+  display: block;
+  margin: 0;
+  flex-shrink: 0;
+  transform: translateY(1px);
+}
+
 .callout-brand {
   background-color: #FDECD8;
   border-left: 3px solid #ff4914;
@@ -201,6 +250,7 @@ aside a[aria-current='true']::before {
 
 /* Full-width sidebar banner dropdown — right beneath the search bar */
 .am-track-banner {
+  position: relative;
   padding: 0.5rem 0.6rem 0.6rem;
   border-bottom: 1px solid var(--color-fd-border);
 }
@@ -219,6 +269,7 @@ aside a[aria-current='true']::before {
   color: var(--color-fd-foreground);
   transition: background 0.12s;
   text-align: left;
+  white-space: nowrap;
 }
 
 .am-track-banner-btn:hover {
@@ -231,11 +282,20 @@ aside a[aria-current='true']::before {
 }
 
 .am-track-banner-panel {
-  margin-top: 0.3rem;
+  position: absolute;
+  left: 0.6rem;
+  right: 0.6rem;
+  top: calc(100% - 0.2rem);
   background: var(--color-fd-popover);
   border: 1px solid var(--color-fd-border);
   border-radius: 4px;
   overflow: hidden;
+  z-index: 40;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dark .am-track-banner-panel {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
 }
 
 .am-track-banner-item {
@@ -251,6 +311,7 @@ aside a[aria-current='true']::before {
   color: var(--color-fd-foreground);
   text-align: left;
   transition: background 0.1s;
+  white-space: nowrap;
 }
 
 .am-track-banner-item:hover {
@@ -263,6 +324,7 @@ aside a[aria-current='true']::before {
 
 .am-track-banner-item-label {
   flex: 1;
+  min-width: 0;
 }
 
 .am-track-banner-item.is-active .am-track-banner-item-label {
@@ -361,45 +423,36 @@ aside a[aria-current='true']::before {
   flex-shrink: 0;
 }
 
-/* API reference blocks — code on top, table below */
-.am-api-block {
+/* API reference layout — sticky code block with regular prose content */
+.am-api-section {
   margin: 1.5rem 0 2rem;
-  border: 1px solid var(--color-fd-border);
-  border-radius: 0.5rem;
-  overflow: hidden;
-  background: var(--color-fd-card);
 }
 
 .am-api-code {
-  border-bottom: 1px solid var(--color-fd-border);
-}
-
-.am-api-code pre {
-  margin: 0 !important;
-  border-radius: 0 !important;
-  border: none !important;
+  margin: 0.75rem 0 1rem;
+  width: 100%;
 }
 
 .am-api-content {
-  padding: 1rem 1.1rem;
+  min-width: 0;
 }
 
 .am-api-endpoint {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  padding: 0.75rem 1.1rem 0;
-  margin: 0;
+  padding: 0;
+  margin: 0 0 0.6rem;
 }
 
 .am-api-sig {
-  padding: 0.75rem 1.1rem 0;
-  margin: 0;
-}
-
-.am-api-sig code {
+  padding: 0;
+  margin: 0 0 0.6rem;
+  text-align: left;
   font-size: 0.88rem;
   font-weight: 600;
+  font-family: ui-monospace, 'Cascadia Code', Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0;
 }
 
 .am-api-method {

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react"
 
+import { DynamicCodeBlock } from "fumadocs-ui/components/dynamic-codeblock"
+
 type ApiReferenceBlockProps = {
   /** REST API method badge — omit for SDK/React tracks */
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
@@ -23,7 +25,7 @@ export function ApiReferenceBlock({
   const hasEndpoint = method && path
 
   return (
-    <section className="am-api-block">
+    <section className="am-api-section">
       {hasEndpoint && (
         <p className="am-api-endpoint">
           <span
@@ -34,15 +36,9 @@ export function ApiReferenceBlock({
           <code>{path}</code>
         </p>
       )}
-      {!hasEndpoint && title && (
-        <p className="am-api-sig">
-          <code>{title}</code>
-        </p>
-      )}
+      {!hasEndpoint && title && <p className="am-api-sig">{title}</p>}
       <div className="am-api-code">
-        <pre data-language={language}>
-          <code>{code}</code>
-        </pre>
+        <DynamicCodeBlock lang={language} code={code} />
       </div>
       <div className="am-api-content">{children}</div>
     </section>
