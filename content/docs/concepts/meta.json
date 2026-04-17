@@ -5,7 +5,10 @@
     "assistants",
     "knowledge-base",
     "actions",
+    "test-cases",
+    "evaluations",
     "usage",
-    "api-key"
+    "api-key",
+    "security"
   ]
 }

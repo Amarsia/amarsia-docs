@@ -1,11 +1,11 @@
 ---
 title: Concepts overview
-description: Understand the five concepts that make Amarsia reliable, flexible, and fast to iterate in production.
+description: Understand the eight concepts that make Amarsia reliable, flexible, and fast to iterate in production.
 ---
 
 ## Overview
 
-Amarsia is built around five concepts: Assistants, Knowledge Base, Actions, Usage, and API keys. Together, they cover the full lifecycle from building your AI behavior to safely running it in production.
+Amarsia is built around eight concepts that cover the full lifecycle of an assistant: building its behavior, grounding it in your own knowledge, giving it real-world tools, proving it works before you ship, and securing and monitoring it in production.
 
 The goal is practical: less engineering overhead, fewer blind spots, and faster iteration when your product needs change.
 
@@ -15,8 +15,11 @@ The goal is practical: less engineering overhead, fewer blind spots, and faster 
   <Card title="Assistants" href="/concepts/assistants" description="Versioned AI behavior with prompts, tools, knowledge, testing, and deployment in one workflow." />
   <Card title="Knowledge base" href="/concepts/knowledge-base" description="Your assistant's context layer for documents and business memory, processed for high-answer quality." />
   <Card title="Actions" href="/concepts/actions" description="Isolated tools your assistant can execute, built from templates or imported via MCP." />
+  <Card title="Test cases" href="/concepts/test-cases" description="Saved scenarios you can replay on every change to catch regressions before users do." />
+  <Card title="Evaluations" href="/concepts/evaluations" description="Score every run against the metrics you care about and learn what is regressing." />
   <Card title="Usage" href="/concepts/usage" description="Detailed logs, traces, and token metrics so you can debug, improve, and control costs." />
-  <Card title="API key" href="/concepts/api-key" description="The credential required to run deployed assistants and secure every integration." />
+  <Card title="API key" href="/concepts/api-key" description="The credential used to authenticate calls to assistants that require authentication." />
+  <Card title="Security" href="/concepts/security" description="Choose between API-key authentication and a domain allowlist for public, in-browser assistants." />
 </Cards>
 
 ## Outcome-driven view
@@ -26,8 +29,11 @@ The goal is practical: less engineering overhead, fewer blind spots, and faster 
 | Reliable AI behavior you can update without app rewrites | [Assistants](/concepts/assistants) |
 | Better factual responses from your own content | [Knowledge base](/concepts/knowledge-base) |
 | Real-world actions like API calls, database queries, and notifications | [Actions](/concepts/actions) |
+| Confidence that changes didn't break existing behavior | [Test cases](/concepts/test-cases) |
+| Measurable quality scores for every production run | [Evaluations](/concepts/evaluations) |
 | Visibility into failures, reasoning, and tool runs | [Usage](/concepts/usage) |
 | Secure access from your product or backend | [API key](/concepts/api-key) |
+| Safe public access from browser apps you own | [Security](/concepts/security) |
 
 ## Related
 

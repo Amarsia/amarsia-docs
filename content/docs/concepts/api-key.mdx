@@ -5,9 +5,9 @@ description: Secure every API call to deployed assistants using your Amarsia API
 
 ## Overview
 
-API key is required for any Amarsia API usage. Your application sends it in the `x-api-key` header to authenticate requests.
+An API key is the default credential Amarsia uses to authenticate calls to a deployed assistant. Your application sends it in the `x-api-key` header on every request.
 
-No key means no access, so key handling is a core part of production readiness.
+Keys are **required whenever an assistant has authentication turned on**. For public, authless deployments, see [Security](/concepts/security) for how requests are authorized by allowlist instead.
 
 ## Where to create keys
 
@@ -20,6 +20,8 @@ From there you can create, copy, and revoke keys.
 ```bash
 x-api-key: YOUR_API_KEY
 ```
+
+If the assistant has authentication turned off, you can omit the header and rely on the allowlist defined in the assistant's [Security](/concepts/security) settings.
 
 ## Key management basics
 
@@ -34,5 +36,6 @@ Treat API keys like production credentials. If a key leaks, rotate it immediatel
 
 ## Related
 
+- [Security](/concepts/security)
 - [Client usage quickstart](/client-usage/quickstart)
 - [Authentication reference](/api-reference/authentication)

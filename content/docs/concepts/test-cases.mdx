@@ -1,0 +1,73 @@
+---
+title: Test cases
+description: Capture reusable scenarios, run them on every change, and catch regressions before your users do.
+---
+
+## Overview
+
+Test cases are saved, repeatable scenarios you can run against an assistant on demand. Use them to lock in the behavior you care about — common user requests, tricky edge cases, tool workflows — so you notice the moment a prompt or tool change breaks something.
+
+Every test case lives next to the assistant it belongs to and produces a normal run log, so you get the same traces, tokens, and [evaluations](/concepts/evaluations) you would get from a production call.
+
+## How it works
+
+1. Open an assistant and go to the **Tests** tab.
+2. Create a test case: pick a type, give it a name, and fill in the scenario.
+3. Run it. The test executes against the current version of the assistant and records a full log.
+4. Re-run individual tests (or all tests) after any change to the prompt, tools, or knowledge base.
+
+## Test types
+
+Test cases mirror the three ways an assistant is actually called in production, so you can cover each code path:
+
+| Type | What it simulates | When to use it |
+|---|---|---|
+| `runner` | A single, non-streaming call to the deployment. | Backend jobs, one-shot completions. |
+| `streaming` | A streaming call where tokens arrive incrementally. | Client UIs that render partial output. |
+| `conversation` | A multi-turn conversation with simulated user replies. | Chat widgets, agents that hold state across turns. |
+
+`conversation` tests can optionally cap `max_conversation_turns` and drive the simulated user with a short `simulated_scenario` description.
+
+## Anatomy of a test case
+
+| Field | Purpose |
+|---|---|
+| `name` | Short label shown in the dashboard. |
+| `test_type` | One of `runner`, `streaming`, `conversation`. |
+| `content` | The user message(s) the test sends — text, image, video, audio, or URL parts. |
+| `variables` | Values substituted into your assistant's prompt variables for this test. |
+| `simulated_scenario` | A prompt that drives the simulated user in `conversation` tests. |
+| `max_conversation_turns` | Safety cap for `conversation` tests. |
+
+## Run states
+
+Each run updates the test's `last_run_status`:
+
+| Status | Meaning |
+|---|---|
+| `idle` | Never run, or reset. |
+| `running` | Currently executing. |
+| `passed` | Completed and any configured [evaluations](/concepts/evaluations) met their threshold. |
+| `failed` | Execution errored or evaluations marked it as failing. |
+
+Archived tests are kept for history but are not included in bulk runs.
+
+## When to use test cases
+
+- **Before publishing a new version.** Run the full suite to confirm nothing regressed.
+- **After editing a tool.** Re-run only the tests that exercise that tool.
+- **When reproducing a bug.** Turn the failing production conversation into a test so the fix is verifiable and the regression cannot return quietly.
+
+## Key terms
+
+| Term | Meaning |
+|---|---|
+| Test case | A saved scenario that can be replayed against the assistant. |
+| Simulated scenario | The role description Amarsia uses to drive the simulated user in `conversation` tests. |
+| Suite | The full set of active test cases for an assistant. |
+
+## Related
+
+- [Assistants](/concepts/assistants)
+- [Evaluations](/concepts/evaluations)
+- [Usage](/concepts/usage)

@@ -1,0 +1,81 @@
+---
+title: Evaluations
+description: Grade every assistant run against the metrics you care about and use the results to improve behavior.
+---
+
+## Overview
+
+Evaluations turn raw assistant runs into graded outcomes. You define the metrics that matter to your product — helpfulness, grounding, tone, tool correctness — and Amarsia scores each run against them automatically.
+
+Evaluation runs in the background right after a real run finishes, so it never slows down the user-facing response but still produces per-run scores you can filter and learn from.
+
+## How it works
+
+1. Open an assistant and go to the **Evaluations** tab.
+2. Define one or more metrics. Each metric has a `name` and a `description` that tells the evaluator what "good" looks like.
+3. Save. New runs from now on will be evaluated against this metric set.
+4. Inspect evaluation status and scores in the [Usage](/concepts/usage) dashboard, per run.
+
+Under the hood:
+
+- Metrics live on the assistant, so you can version and evolve them alongside the assistant itself.
+- When a run completes, the runner enqueues an evaluation job using the same transcript, tool calls, and knowledge-base context the user saw.
+- The evaluator walks the run through each metric and writes the result back to the run's log.
+
+### Run status lifecycle
+
+Each run carries an evaluation status that moves through the pipeline:
+
+| Status | Meaning |
+|---|---|
+| `pending` | The run was accepted and an evaluation job has been queued. |
+| `in_progress` | The evaluator is scoring the run now. |
+| `completed` | Scores are available in the run log. |
+| `failed` | The evaluator could not complete (for example, no usable provider key). |
+
+## Writing good metrics
+
+A metric is only as useful as its description. Keep metrics:
+
+- **Narrow.** One behavior per metric beats one vague "quality" metric.
+- **Observable.** Describe something a reader could judge from the transcript alone.
+- **Actionable.** When a metric fails, it should suggest a concrete fix (prompt, tool, knowledge base).
+
+### Example
+
+```json
+[
+  {
+    "name": "groundedness",
+    "description": "The answer only uses facts that appear in the provided knowledge base or the conversation. No invented names, dates, or numbers."
+  },
+  {
+    "name": "tool_correctness",
+    "description": "If a tool call is made, the chosen tool and its parameters match the user's request."
+  },
+  {
+    "name": "concise",
+    "description": "The final answer is no longer than needed to answer the user's question."
+  }
+]
+```
+
+## Cost and performance
+
+- Evaluation runs in the background and never blocks the user's response.
+- Each evaluation call consumes tokens on the assistant's configured evaluation model. Plan accordingly if you evaluate high-volume assistants.
+- Failed evaluations are recorded as `failed` rather than retried indefinitely, so a provider outage does not snowball.
+
+## Key terms
+
+| Term | Meaning |
+|---|---|
+| Metric | A single named rubric (`name`, `description`) the evaluator scores against. |
+| Evaluation status | The per-run state of the evaluation pipeline. |
+| Evaluation result | The structured scores and notes the evaluator produced for a run. |
+
+## Related
+
+- [Assistants](/concepts/assistants)
+- [Test cases](/concepts/test-cases)
+- [Usage](/concepts/usage)

@@ -6,10 +6,15 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react"
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "fumadocs-ui/components/ui/popover"
 
 /* ─────────────────────────────────────────────────── track model */
 
@@ -92,89 +97,86 @@ export function useTrack() {
 export function TrackBannerBar() {
   const { track, setTrack, mounted } = useTrack()
   const current = mounted ? track : "sdk"
-  const [open, setOpen] = useState(false)
-  const wrapRef = useRef<HTMLDivElement>(null)
   const meta = TRACK_META[current]
-
-  useEffect(() => {
-    function onMouseDown(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    if (open) document.addEventListener("mousedown", onMouseDown)
-    return () => document.removeEventListener("mousedown", onMouseDown)
-  }, [open])
+  const [open, setOpen] = useState(false)
 
   return (
-    <div className="am-track-banner" ref={wrapRef}>
-      <button
-        className="am-track-banner-btn"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-      >
-        <TrackIcon icon={meta.icon} label={meta.label} />
-        <span className="am-track-banner-label">{meta.label}</span>
-        <svg
-          className={`am-track-chevron${open ? "is-open" : ""}`}
-          width="10"
-          height="10"
-          viewBox="0 0 10 10"
-          fill="none"
-          aria-hidden
+    <div className="am-track-banner px-2.5 py-2">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="bg-fd-secondary/50 text-fd-secondary-foreground hover:bg-fd-accent data-[state=open]:bg-fd-accent data-[state=open]:text-fd-accent-foreground flex w-full items-center gap-2 rounded-lg border p-2 text-start transition-colors"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+          >
+            <TrackIcon icon={meta.icon} label={meta.label} />
+            <div className="min-w-0">
+              <p className="text-sm font-medium">{meta.label}</p>
+            </div>
+            <svg
+              className={`text-fd-muted-foreground ms-auto size-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+              width="16"
+              height="16"
+              viewBox="0 0 10 10"
+              fill="none"
+              aria-hidden
+            >
+              <path
+                d="M2 3.5L5 6.5L8 3.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          sideOffset={4}
+          className="am-track-banner-panel flex w-[var(--radix-popover-trigger-width)] flex-col gap-1 overflow-hidden p-1"
         >
-          <path
-            d="M2 3.5L5 6.5L8 3.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="am-track-banner-panel" role="listbox">
           {TRACKS.map((t) => {
             const m = TRACK_META[t]
             const active = t === current
             return (
               <button
+                type="button"
                 key={t}
                 role="option"
                 aria-selected={active}
-                className={`am-track-banner-item${active ? "is-active" : ""}`}
+                className={`hover:bg-fd-accent hover:text-fd-accent-foreground flex items-center gap-2 rounded-lg p-1.5 text-start transition-colors ${active ? "bg-fd-accent text-fd-accent-foreground" : ""}`}
                 onClick={() => {
                   setTrack(t)
                   setOpen(false)
                 }}
               >
                 <TrackIcon icon={m.icon} label={m.label} />
-                <span className="am-track-banner-item-label">{m.label}</span>
-                {active && (
-                  <svg
-                    className="am-track-check"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    aria-hidden
-                  >
-                    <path
-                      d="M2 6L5 9L10 3"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{m.label}</p>
+                </div>
+                <svg
+                  className={`text-fd-primary ms-auto size-3.5 shrink-0 ${active ? "" : "invisible"}`}
+                  width="14"
+                  height="14"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M2 6L5 9L10 3"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
             )
           })}
-        </div>
-      )}
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }
@@ -202,88 +204,81 @@ function TrackIcon({ icon, label }: { icon: string | null; label: string }) {
 export function TrackDropdown() {
   const { track, setTrack } = useTrack()
   const [open, setOpen] = useState(false)
-  const wrapRef = useRef<HTMLDivElement>(null)
   const meta = TRACK_META[track]
 
-  useEffect(() => {
-    function onMouseDown(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    if (open) document.addEventListener("mousedown", onMouseDown)
-    return () => document.removeEventListener("mousedown", onMouseDown)
-  }, [open])
-
   return (
-    <div className="am-track-wrap" ref={wrapRef}>
-      <button
-        className="am-track-btn"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-      >
-        <TrackIcon icon={meta.icon} label={meta.label} />
-        <span className="am-track-label">{meta.label}</span>
-        <svg
-          className={`am-track-chevron${open ? "is-open" : ""}`}
-          width="10"
-          height="10"
-          viewBox="0 0 10 10"
-          fill="none"
-          aria-hidden
+    <div className="am-track-wrap">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="bg-fd-secondary/50 text-fd-secondary-foreground hover:bg-fd-accent data-[state=open]:bg-fd-accent data-[state=open]:text-fd-accent-foreground flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-start transition-colors"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+          >
+            <TrackIcon icon={meta.icon} label={meta.label} />
+            <span className="text-sm">{meta.label}</span>
+            <svg
+              className={`text-fd-muted-foreground size-3.5 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+              width="14"
+              height="14"
+              viewBox="0 0 10 10"
+              fill="none"
+              aria-hidden
+            >
+              <path
+                d="M2 3.5L5 6.5L8 3.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="end"
+          sideOffset={4}
+          className="flex min-w-[230px] flex-col gap-1 overflow-hidden p-1"
         >
-          <path
-            d="M2 3.5L5 6.5L8 3.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="am-track-panel" role="listbox">
           {TRACKS.map((t) => {
             const m = TRACK_META[t]
             const active = t === track
             return (
               <button
+                type="button"
                 key={t}
                 role="option"
                 aria-selected={active}
-                className={`am-track-item${active ? "is-active" : ""}`}
+                className={`hover:bg-fd-accent hover:text-fd-accent-foreground flex items-center gap-2 rounded-lg p-1.5 text-start transition-colors ${active ? "bg-fd-accent text-fd-accent-foreground" : ""}`}
                 onClick={() => {
                   setTrack(t)
                   setOpen(false)
                 }}
               >
                 <TrackIcon icon={m.icon} label={m.label} />
-                <span className="am-track-label">{m.label}</span>
-                {active && (
-                  <svg
-                    className="am-track-check"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    aria-hidden
-                  >
-                    <path
-                      d="M2 6L5 9L10 3"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
+                <span className="text-sm font-medium">{m.label}</span>
+                <svg
+                  className={`text-fd-primary ms-auto size-3.5 shrink-0 ${active ? "" : "invisible"}`}
+                  width="14"
+                  height="14"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M2 6L5 9L10 3"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
             )
           })}
-        </div>
-      )}
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }

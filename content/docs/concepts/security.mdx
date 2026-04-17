@@ -1,0 +1,67 @@
+---
+title: Security
+description: Control who can call an assistant with API-key authentication or an origin allowlist.
+---
+
+## Overview
+
+Every assistant has a security profile that decides how its deployment endpoint is authorized. You pick one of two modes per assistant:
+
+- **Authentication on** — Callers must send a valid `x-api-key`. This is the default and the right choice for backend integrations.
+- **Authentication off** — The assistant is public and authorized by an **Allowlist** of domains you own. This is the right choice for in-browser widgets where an API key cannot be kept secret.
+
+## How it works
+
+1. Open an assistant and go to the **Security** tab.
+2. Toggle **Authentication required**.
+3. If authentication is off, add the domains allowed to call this assistant.
+4. Save. The change takes effect on the next call to the deployment.
+
+Under the hood the runner applies these rules:
+
+- When **authentication is on**, the request must include `x-api-key` and the key must belong to the same project as the assistant. The allowlist is ignored.
+- When **authentication is off**, the runner reads the incoming `Origin` (or `Referer`) header and matches its hostname against the allowlist. An **empty allowlist allows all origins**.
+
+### Allowlist matching
+
+Entries are matched as **host suffixes, including subdomains**. This gives you one entry that covers apex + subdomains without having to enumerate them.
+
+| Allowlist entry | Matches | Does not match |
+|---|---|---|
+| `amarsia.com` | `amarsia.com`, `app.amarsia.com`, `docs.amarsia.com` | `amarsia.dev`, `notamarsia.com` |
+| `app.amarsia.com` | `app.amarsia.com`, `eu.app.amarsia.com` | `amarsia.com`, `other.amarsia.com` |
+| `localhost` | `localhost` | `127.0.0.1` |
+
+Entries are normalized on save: scheme, path, port, and `www.` are stripped, and duplicates are removed. Add `localhost` during development if you call the deployment from a local dev server.
+
+## When to use which mode
+
+| You are building | Recommended mode | Why |
+|---|---|---|
+| Server-to-server integration, backend job, agent platform | Authentication on | The key stays on your server and cannot be extracted by end users. |
+| In-browser chat widget, marketing-site assistant, embeddable support bot | Authentication off + allowlist | You cannot ship a secret to the browser; origin-based auth is the correct primitive. |
+| Mobile app calling Amarsia directly from the device | Authentication off + allowlist (or a backend proxy) | Native apps can spoof `Origin`; prefer a backend proxy whenever possible. |
+
+<Callout type="warning">
+Browsers are the only environment where `Origin` / `Referer` can be trusted. If you accept calls from non-browser clients, require authentication and proxy through your backend.
+</Callout>
+
+## Billing for public assistants
+
+When authentication is off, there is no API key to attribute usage to. The runner charges the assistant's **project owner**, falling back to the assistant's creator if no project owner is set. Logs and usage metrics still show up under the same project, just as if the owner had called it themselves.
+
+## Key terms
+
+| Term | Meaning |
+|---|---|
+| Authentication required | Whether the deployment demands a valid `x-api-key`. |
+| Allowlist | Ordered list of host suffixes allowed to call a public assistant. |
+| Origin | The scheme + host + port the browser sends on cross-origin requests. Amarsia checks the hostname only. |
+| Host suffix match | `app.example.com` matches `example.com` but not the other way around. |
+
+## Related
+
+- [API key](/concepts/api-key)
+- [Assistants](/concepts/assistants)
+- [Usage](/concepts/usage)
+- [Client usage quickstart](/client-usage/quickstart)
