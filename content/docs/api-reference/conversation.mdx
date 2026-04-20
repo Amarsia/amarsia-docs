@@ -165,11 +165,14 @@ Response shape:
 
 conversation.start() // new local context
 conversation.start("conv_existing_123") // resume existing conversation
-conversation.start(undefined, "dep_support") // keep new context, override deployment
-conversation.start("conv_existing_123", "dep_support") // resume + override deployment`}
+`}
 >
 
-`start(...)` sets the active conversation context. Use `start("conv_...")` to continue a previously saved thread.
+`start(...)` sets active conversation context (`conversation.id` + `deploymentId`) and clears local conversation state.
+Use `start("conv_...")` to resume a saved conversation.
+Do not switch deployment in the middle of a thread and expect the same conversation continuity.
+For most apps, if you need a different deployment, initialize a new client with that deployment id.
+The second `deploymentId` argument is an advanced option and is rarely needed.
 
 </ApiReferenceBlock>
 
