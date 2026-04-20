@@ -1,11 +1,13 @@
 ---
 title: Errors
-description: Error object and retry handling for SDK, React, and REST tracks.
+description: Error envelopes, SDK error classes, and retry guidance.
 ---
 
-## Error response shape
+## REST error envelopes
 
-When a request fails, response generally contains:
+REST responses can return one of these shapes.
+
+OpenAI-style envelope:
 
 ```json
 {
@@ -18,7 +20,29 @@ When a request fails, response generally contains:
 }
 ```
 
-## Error object fields
+FastAPI-style envelope:
+
+```json
+{
+  "detail": "content is required"
+}
+```
+
+FastAPI validation envelope:
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["body", "content"],
+      "msg": "field required",
+      "type": "value_error.missing"
+    }
+  ]
+}
+```
+
+## REST field meaning
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -40,14 +64,40 @@ When a request fails, response generally contains:
 | `429` | Too Many Requests | Rate limit reached | Retry with exponential backoff |
 | `500`/`502`/`503`/`504` | Server Errors | Temporary server issue | Retry safely |
 
-## Error `type` values
+## SDK error classes
 
-| Type | Meaning |
+The SDK normalizes errors into typed classes.
+
+| SDK error class | When it happens |
 |---|---|
-| `api_error` | Unexpected server-side error |
-| `invalid_request_error` | Request shape or parameters are invalid |
-| `auth_error` | Authentication/authorization issue |
-| `rate_limit_error` | Request limit exceeded |
+| `AmarsiaHttpError` | API returned a non-2xx response |
+| `AmarsiaValidationError` | SDK-side validation failed (for example empty `content`) |
+| `AmarsiaConfigurationError` | Missing config or required IDs (for example no conversation id) |
+| `AmarsiaAbortError` | Request was aborted |
+| `AmarsiaNetworkError` | Network layer failure |
+
+## SDK error fields
+
+| Field | Meaning |
+|---|---|
+| `name` | Error class name |
+| `status` | HTTP status (when available) |
+| `code` | Stable symbolic code |
+| `message` | Human-readable message |
+| `param` | Related request param when available |
+| `details` | Full parsed response body or raw payload |
+
+Common SDK `code` values:
+
+| Code | Typical cause |
+|---|---|
+| `bad_request` | Invalid payload |
+| `unauthorized` | Missing/invalid API key |
+| `forbidden` | Key or origin not allowed |
+| `not_found` | Resource/path not found |
+| `unprocessable_entity` | Server-side validation failed |
+| `rate_limited` | Request limit exceeded |
+| `internal_server_error` | Server-side failure |
 
 <TrackContent track="sdk">
 
@@ -62,7 +112,11 @@ try {
   })
 } catch (error) {
   if (error instanceof AmarsiaSdkError) {
-    console.error(error.status, error.code, error.message)
+    console.error(error.name)
+    console.error(error.status)
+    console.error(error.code)
+    console.error(error.message)
+    console.error(error.details)
   }
 }
 ```
@@ -77,7 +131,7 @@ try {
 const { run, status, error } = useRun(client)
 
 if (status === "error") {
-  console.error(error?.message)
+  console.error(error?.name, error?.code, error?.message)
 }
 ```
 
@@ -89,7 +143,7 @@ if (status === "error") {
 
 ```ts
 function shouldRetry(status: number) {
-  return status === 429 || status >= 500
+  return status === 429 || status >= 500 || status === 0
 }
 ```
 

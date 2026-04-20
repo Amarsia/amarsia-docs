@@ -7,6 +7,20 @@ description: One-shot and streaming generation for SDK, React, and REST.
 
 Send `content` → get generated output. Stateless — no memory between calls.
 
+## `content` body structure (`MessageContent[]`)
+
+The `content` array uses a shared schema across `run`, `stream`, and conversation methods.
+
+| `type` | Required fields | Example |
+|---|---|---|
+| `text` | `text` | `{ "type": "text", "text": "Summarize this" }` |
+| `image` | `mime_type`, `file_uri` | `{ "type": "image", "mime_type": "image/jpeg", "file_uri": "https://..." }` |
+| `video` | `mime_type`, `file_uri` | `{ "type": "video", "mime_type": "video/mp4", "file_uri": "https://..." }` |
+| `audio` | `mime_type`, `file_uri` | `{ "type": "audio", "mime_type": "audio/mpeg", "file_uri": "https://..." }` |
+| `url` | `mime_type`, `file_uri` | `{ "type": "url", "mime_type": "application/pdf", "file_uri": "https://..." }` |
+
+For full multimodal examples, see [Multimodal](/client-usage/multimodal).
+
 ## One-shot call
 
 <TrackContent track="sdk">
@@ -104,6 +118,8 @@ Returns a single JSON response when complete.
 
 await client.stream({
   content: [{ type: "text", text: "Stream this response." }],
+  variables: { TONE: "friendly" },
+  signal: abortController.signal,
 })`}
 >
 
@@ -114,6 +130,19 @@ await client.stream({
 | `state.live` | Partial text as it streams in |
 | `state.data` | Complete response once done |
 | `state.status` | `idle \| loading \| streaming \| success \| error` |
+
+| Option | Type | Required | Description |
+|---|---|---|---|
+| `content` | `MessageContent[]` | Yes | Input items (`text`, `image`, `video`, `audio`, `url`) |
+| `variables` | object | No | Values injected into assistant instructions |
+| `deploymentId` | string | No | Override init-level deployment for this call |
+| `signal` | `AbortSignal` | No | Cancel in-flight stream |
+
+Abort a stream:
+
+```ts
+client.stream.abort()
+```
 
 </ApiReferenceBlock>
 
@@ -162,6 +191,11 @@ await stream({
 
 Use `-N` flag so curl doesn't buffer the response. Concatenate chunks to reconstruct the full output.
 
+| Body field | Type | Required | Description |
+|---|---|---|---|
+| `content` | array | Yes | Input items |
+| `variables` | object | No | Prompt variable overrides |
+
 </ApiReferenceBlock>
 
 </TrackContent>
@@ -175,7 +209,8 @@ Every response (run or stream final) returns:
   "content": "The assistant's output...",
   "model": "model-name",
   "input_tokens": 42,
-  "output_tokens": 61
+  "output_tokens": 61,
+  "request_id": "req_123"
 }
 ```
 

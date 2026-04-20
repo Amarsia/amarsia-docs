@@ -11,7 +11,7 @@ description: Full method reference for JavaScript SDK, React hooks, and REST API
 https://api.amarsia.com/v1
 ```
 
-All endpoint paths below are appended to this base URL. Every request requires an `x-api-key` header.
+All endpoint paths below are appended to this base URL. Authenticated workflows require an `x-api-key` header. Public workflows can use allowlist-based access.
 
 </TrackContent>
 
@@ -74,7 +74,8 @@ import { useRun, useStream, useConversation } from "@amarsia/react"
 |---|---|---|---|
 | `content` | array | Yes | Input items — text, image, video, audio, url |
 | `variables` | object | No | Values injected into assistant instructions |
-| `meta` | object | No | Custom labels for conversation tracking |
+
+`meta` is **not** universal. It is only valid when creating a new conversation (`POST /conversation` first message).
 
 ## Universal response shape
 
@@ -86,3 +87,5 @@ import { useRun, useStream, useConversation } from "@amarsia/react"
   "output_tokens": 61
 }
 ```
+
+Conversation responses also include `conversation_id` and may include timestamps (`created_at`, `updated_at`).

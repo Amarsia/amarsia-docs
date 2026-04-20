@@ -5,7 +5,7 @@ description: Handle errors safely across SDK, React, and REST API integrations.
 
 ## Error shape
 
-When something fails, this is the common REST error envelope:
+When something fails, REST responses usually look like one of these:
 
 ```json
 {
@@ -17,6 +17,14 @@ When something fails, this is the common REST error envelope:
 }
 ```
 
+```json
+{
+  "detail": "content is required"
+}
+```
+
+For full status code and error-type mapping, use [API errors reference](/api-reference/errors).
+
 ## What fields mean
 
 | Field | Meaning |
@@ -25,17 +33,6 @@ When something fails, this is the common REST error envelope:
 | `message` | Human-readable reason |
 | `param` | Which input field caused the problem (if available) |
 | `code` | Optional machine-friendly error code |
-
-## Common status codes
-
-| Status | What happened | What you should do |
-|---|---|---|
-| `400` | Bad request | Fix request JSON/fields |
-| `401` | Invalid or missing API key | Set correct `x-api-key` |
-| `403` | Key not allowed | Check key permissions/project |
-| `404` | Endpoint or resource not found | Verify URL/ID |
-| `429` | Too many requests | Retry with backoff |
-| `5xx` | Server problem | Retry after short delay |
 
 <TrackContent track="sdk">
 
@@ -50,7 +47,8 @@ try {
   })
 } catch (error) {
   if (error instanceof AmarsiaSdkError) {
-    console.error(error.status, error.code, error.message)
+    console.error(error.name, error.status, error.code, error.message)
+    console.error(error.details)
   } else {
     console.error(error)
   }
@@ -58,6 +56,14 @@ try {
 ```
 
 </TrackContent>
+
+## SDK-thrown validation errors
+
+Some errors happen before the request reaches the API:
+
+- `content` is empty or malformed
+- conversation continuation includes `variables` or `meta`
+- message history requested without conversation id
 
 <TrackContent track="react">
 

@@ -1,71 +1,27 @@
 ---
 title: Conversation API
-description: Stateful chat references for SDK, React, and REST API.
+description: Endpoint and SDK reference for stateful multi-turn conversations.
 ---
 
-## What this does
+Conversations keep memory across messages using a `conversation_id`. Keep that ID if you want to continue the same thread later.
 
-Keeps multi-turn memory with conversation IDs. Each message in the same thread shares context with prior turns.
+`content` in conversation endpoints uses the same `MessageContent[]` schema as Runner API.
+See [Runner API — content body structure](/api-reference/runner#content-body-structure-messagecontent) and [Multimodal](/client-usage/multimodal).
 
-## Start conversation
+<TrackContent track="rest-api">
 
-<TrackContent track="sdk">
+**Endpoints at a glance**
 
-<ApiReferenceBlock
-  title="conversation.run(options)"
-  language="typescript"
-  code={`const conversation = client.conversation
-conversation.start()
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/v1/runner/{deployment_id}/conversation` | Start or continue a conversation (non-stream) |
+| `POST` | `/v1/runner/{deployment_id}/conversation/stream` | Continue a conversation with streaming |
+| `GET` | `/v1/runner/conversation/{conversation_id}/messages` | Read paginated message history |
+| `GET` | `/v1/runner/conversations` | List conversations (supports `meta` filters) |
 
-await conversation.run({
-  content: [{ type: "text", text: "Hi, I need help." }],
-  meta: { userId: "user_123" },
-})
+**`POST /v1/runner/{deployment_id}/conversation`**
 
-console.log(conversation.id)    // "conv_abc123"
-console.log(conversation.messages)`}
->
-
-Call `conversation.start()` to begin a new thread. The ID is created on the first message.
-
-| Option | Type | Required | Description |
-|---|---|---|---|
-| `content` | `MessageContent[]` | Yes | First message |
-| `meta` | object | No | Custom labels for analytics/filtering |
-| `variables` | object | No | Injected into assistant instructions |
-| `historyLimit` | number | No | Max past messages to include as context |
-
-</ApiReferenceBlock>
-
-</TrackContent>
-
-<TrackContent track="react">
-
-<ApiReferenceBlock
-  title="useConversation(client)"
-  language="tsx"
-  code={`const { conversation, id, messages, status } = useConversation(client)
-
-await conversation.stream({
-  content: [{ type: "text", text: "Start support chat." }],
-})
-
-console.log(id)       // "conv_abc123"
-console.log(messages) // [{ role: "user", ... }, { role: "assistant", ... }]`}
->
-
-`useConversation(client)` manages thread state reactively. `messages` updates after each turn.
-
-| Return | Meaning |
-|---|---|
-| `conversation` | Conversation controller (same API as SDK) |
-| `id` | Current conversation ID (null before first message) |
-| `messages` | Reactive array of all turns |
-| `status` | `idle \| loading \| streaming \| success \| error` |
-
-</ApiReferenceBlock>
-
-</TrackContent>
+Used for both first message and follow-up messages.
 
 <TrackContent track="rest-api">
 
@@ -77,52 +33,53 @@ console.log(messages) // [{ role: "user", ... }, { role: "assistant", ... }]`}
   -H "Content-Type: application/json" \\
   -H "x-api-key: YOUR_API_KEY" \\
   -d '{
-    "content": [{ "type": "text", "text": "Hi, I need help." }],
-    "meta": { "userId": "user_123" }
+    "content": [{ "type": "text", "text": "Hi, I need help with my order." }],
+    "variables": { "CUSTOMER_TIER": "pro" },
+    "meta": { "userId": "user_123", "channel": "web-chat" }
   }'`}
 >
 
-Creates a new conversation and returns `conversation_id`. Save it — every follow-up message needs it.
+| Body field | Type | Required | Notes |
+|---|---|---|---|
+| `content` | `MessageContent[]` | Yes | Input parts (`text`, `image`, `video`, `audio`, `url`) |
+| `conversation_id` | string | No | Required only for continuation |
+| `variables` | object | No | First message only |
+| `meta` | object | No | First message only |
+| `history_limit` | number | No | Continuation only |
 
 </ApiReferenceBlock>
 
 </TrackContent>
 
-## Continue conversation
+Response shape:
 
-<TrackContent track="sdk">
+```json
+{
+  "conversation_id": "conv_abc123",
+  "content": "Of course. What's your order number?",
+  "model": "MODEL_NAME",
+  "input_tokens": 42,
+  "output_tokens": 61,
+  "request_id": "req_123",
+  "created_at": "2026-04-20T10:00:00Z",
+  "updated_at": "2026-04-20T10:00:00Z"
+}
+```
 
-<ApiReferenceBlock
-  title="conversation.stream(options)"
-  language="typescript"
-  code={`await client.conversation.stream({
-  content: [{ type: "text", text: "Continue this chat." }],
-  historyLimit: 10,
-})`}
->
+| Response field | Type | Notes |
+|---|---|---|
+| `conversation_id` | string | Save this to continue later |
+| `content` | string or object | Assistant output |
+| `model` | string | Returned when available |
+| `input_tokens` | number | Returned when available |
+| `output_tokens` | number | Returned when available |
+| `request_id` | string | Returned when available |
+| `created_at` | string | Returned when available |
+| `updated_at` | string | Returned when available |
 
-The SDK tracks the ID automatically. Just keep calling `conversation.run(...)` or `conversation.stream(...)` in the same thread.
+**`POST /v1/runner/{deployment_id}/conversation/stream`**
 
-</ApiReferenceBlock>
-
-</TrackContent>
-
-<TrackContent track="react">
-
-<ApiReferenceBlock
-  title="conversation.stream(options)"
-  language="tsx"
-  code={`await conversation.stream({
-  content: [{ type: "text", text: "Please summarize in 2 bullets." }],
-  historyLimit: 10,
-})`}
->
-
-The hook tracks the thread ID for you. `messages` and `status` update reactively after each turn.
-
-</ApiReferenceBlock>
-
-</TrackContent>
+Streaming continuation endpoint.
 
 <TrackContent track="rest-api">
 
@@ -135,43 +92,185 @@ The hook tracks the thread ID for you. `messages` and `status` update reactively
   -H "x-api-key: YOUR_API_KEY" \\
   -d '{
     "conversation_id": "conv_abc123",
-    "content": [{ "type": "text", "text": "Continue this chat." }],
+    "content": [{ "type": "text", "text": "Summarize in 2 bullets." }],
     "history_limit": 10
   }'`}
 >
 
-`conversation_id` is required on every follow-up. Without it, a new thread starts.
-
 | Body field | Type | Required |
 |---|---|---|
-| `conversation_id` | string | Yes (continuation) |
-| `content` | array | Yes |
+| `conversation_id` | string | Yes |
+| `content` | `MessageContent[]` | Yes |
 | `history_limit` | number | No |
+
+Use `-N` with curl so chunks are not buffered.
 
 </ApiReferenceBlock>
 
 </TrackContent>
 
-## Fetch history
+**`GET /v1/runner/conversation/{conversation_id}/messages`**
 
-- Messages: `GET /v1/runner/conversation/{conversation_id}/messages?page=1&page_size=20`
-- All threads: `GET /v1/runner/conversations?page=1&page_size=20`
+Returns paginated messages for one conversation.
 
-## `meta` — tagging conversations
+| Query param | Type | Default |
+|---|---|---|
+| `page` | number | `1` |
+| `page_size` | number | `20` |
 
-Attach custom labels for filtering and analytics:
+Response shape:
 
 ```json
 {
-  "meta": {
-    "userId": "user_123",
-    "projectId": "project_456",
-    "source": "web-chat"
-  }
+  "messages": [{ "id": "msg_1", "role": "user", "content": [{ "type": "text", "text": "Hi" }], "created_at": "..." }],
+  "page": 1,
+  "page_size": 20,
+  "total": 1,
+  "has_more": false
 }
 ```
+
+**`GET /v1/runner/conversations`**
+
+Lists conversations with pagination. You can filter by `meta` fields using query params.
+
+Example:
+
+```text
+GET /v1/runner/conversations?page=1&page_size=20&userId=user_123&channel=web-chat
+```
+
+Response shape:
+
+```json
+{
+  "conversations": [{ "conversation_id": "conv_abc123", "meta": { "userId": "user_123" } }],
+  "page": 1,
+  "page_size": 20,
+  "total": 1,
+  "has_more": false
+}
+```
+
+</TrackContent>
+
+## SDK surface
+
+<TrackContent track="sdk">
+
+<ApiReferenceBlock
+  title="conversation.start(conversationId?, deploymentId?)"
+  language="typescript"
+  code={`const conversation = client.conversation
+
+conversation.start() // new local context
+conversation.start("conv_existing_123") // resume existing conversation
+conversation.start(undefined, "dep_support") // keep new context, override deployment
+conversation.start("conv_existing_123", "dep_support") // resume + override deployment`}
+>
+
+`start(...)` sets the active conversation context. Use `start("conv_...")` to continue a previously saved thread.
+
+</ApiReferenceBlock>
+
+<ApiReferenceBlock
+  title="conversation.run(options) / conversation.stream(options)"
+  language="typescript"
+  code={`await conversation.run({
+  content: [{ type: "text", text: "Hello" }],
+  variables: { CUSTOMER_TIER: "pro" }, // first message only
+  meta: { userId: "user_123" }, // first message only
+  historyLimit: 10, // continuation only
+})`}
+>
+
+| Option | Type | Required | Notes |
+|---|---|---|---|
+| `content` | `MessageContent[]` | Yes | Must be non-empty |
+| `variables` | object | No | First message only |
+| `meta` | object | No | First message only |
+| `historyLimit` | number | No | Continuation only |
+| `signal` | `AbortSignal` | No | Cancel in-flight request |
+
+</ApiReferenceBlock>
+
+<ApiReferenceBlock
+  title="conversation.loadMessages(options)"
+  language="typescript"
+  code={`await conversation.loadMessages() // uses active conversation.id
+
+await conversation.loadMessages({
+  conversationId: "conv_existing_123",
+  page: 1,
+  pageSize: 20,
+  append: true,
+})`}
+>
+
+| Option | Type | Required | Notes |
+|---|---|---|---|
+| `conversationId` | string | No | Uses active `conversation.id` if omitted |
+| `page` | number | No | Defaults to API default |
+| `pageSize` | number | No | Defaults to API default |
+| `append` | boolean | No | Merge into existing `conversation.messages` and dedupe by message id |
+
+</ApiReferenceBlock>
+
+<ApiReferenceBlock
+  title="conversation.list(options)"
+  language="typescript"
+  code={`await conversation.list({
+  page: 1,
+  pageSize: 20,
+  meta: { userId: "user_123", channel: "web-chat" },
+})`}
+>
+
+| Option | Type | Required |
+|---|---|---|
+| `page` | number | No |
+| `pageSize` | number | No |
+| `meta` | object | No |
+
+</ApiReferenceBlock>
+
+`conversation.abort()` aborts any in-flight `conversation.run(...)` or `conversation.stream(...)` call.
+
+State fields exposed by `client.conversation`:
+- `id`, `deploymentId`, `status`, `data`, `live`, `error`, `meta`, `raw`
+- `messages`, `messagesPageInfo`, `conversations`, `conversationsPageInfo`
+
+</TrackContent>
+
+## React surface
+
+<TrackContent track="react">
+
+<ApiReferenceBlock
+  title="useConversation(client)"
+  language="tsx"
+  code={`const { conversation, id, status, live, data, messages } = useConversation(client)
+
+// resume from stored id
+useEffect(() => {
+  const stored = "conv_abc123"
+  if (stored) conversation.start(stored)
+}, [conversation])`}
+>
+
+`useConversation(client)` returns reactive conversation state plus the same conversation controller methods from the SDK.
+
+</ApiReferenceBlock>
+
+</TrackContent>
+
+## Error notes
+
+- `content` must be a non-empty array.
+- `variables` and `meta` are rejected on continuation calls.
+- See [Errors reference](/api-reference/errors) for status and SDK error mapping.
 
 ## Related
 
 - [Conversations usage guide](/client-usage/conversations)
-- [Errors reference](/api-reference/errors)
+- [Runner API](/api-reference/runner)

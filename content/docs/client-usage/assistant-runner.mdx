@@ -24,6 +24,10 @@ import client from "./lib/amarsia"
 
 const result = await client.run({
   content: [{ type: "text", text: "Write a 3-sentence product description for a noise-cancelling headphone." }],
+  variables: {
+    PRODUCT_CATEGORY: "headphones",
+    AUDIENCE: "commuters",
+  }, // optional
 })
 
 console.log(result.content)
@@ -49,6 +53,10 @@ export function RunnerDemo() {
         onClick={() =>
           void run({
             content: [{ type: "text", text: "Write a product description." }],
+            variables: {
+              PRODUCT_CATEGORY: "headphones",
+              AUDIENCE: "commuters",
+            },
           })
         }
       >
@@ -75,11 +83,20 @@ curl https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID \
   -d '{
     "content": [
       { "type": "text", "text": "Write a 3-sentence product description." }
-    ]
+    ],
+    "variables": {
+      "PRODUCT_CATEGORY": "headphones",
+      "AUDIENCE": "commuters"
+    }
   }'
 ```
 
 </TrackContent>
+
+You can pass `variables` in the same call when your assistant prompt expects dynamic values. They are optional, but commonly used.
+
+`content` is an array of typed parts (`text`, `image`, `video`, `audio`, `url`).
+Read the full body schema in [Runner API](/api-reference/runner#content-body-structure-messagecontent) and multimodal examples in [Multimodal](/client-usage/multimodal).
 
 ---
 
@@ -124,11 +141,19 @@ const unsubscribe = client.stream.subscribe((state) => {
 
 await client.stream({
   content: [{ type: "text", text: "Write a detailed product spec." }],
+  variables: {
+    PRODUCT_CATEGORY: "headphones",
+    AUDIENCE: "commuters",
+  },
 })
+
+// cancel active stream if needed
+client.stream.abort()
 ```
 
 - `state.live` — partial text as it streams in
 - `state.data` — the complete response once done
+- `state.live` is cleared to `""` after stream completion
 
 </TrackContent>
 
@@ -149,16 +174,17 @@ export function StreamDemo() {
         onClick={() =>
           void stream({
             content: [{ type: "text", text: "Write a detailed product spec." }],
+            variables: {
+              PRODUCT_CATEGORY: "headphones",
+              AUDIENCE: "commuters",
+            },
           })
         }
       >
         Stream
       </button>
 
-      {/* live updates token by token while streaming */}
-      {(live || data) && (
-        <pre>{live ?? String(data?.content)}</pre>
-      )}
+      {(live || data) && <pre>{live ?? String(data?.content)}</pre>}
     </div>
   )
 }
@@ -177,7 +203,11 @@ curl -N https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/stream \
   -H "Content-Type: application/json" \
   -H "x-api-key: YOUR_API_KEY" \
   -d '{
-    "content": [{ "type": "text", "text": "Write a detailed product spec." }]
+    "content": [{ "type": "text", "text": "Write a detailed product spec." }],
+    "variables": {
+      "PRODUCT_CATEGORY": "headphones",
+      "AUDIENCE": "commuters"
+    }
   }'
 ```
 
@@ -201,6 +231,14 @@ const result = await client.run({
     ISSUE_TYPE: "billing",
   },
 })
+
+const streamed = await client.stream({
+  content: [{ type: "text", text: "Now rewrite as 3 bullets." }],
+  variables: {
+    CLIENT_NAME: "Sarah",
+    ISSUE_TYPE: "billing",
+  },
+})
 ```
 
 </TrackContent>
@@ -208,8 +246,21 @@ const result = await client.run({
 <TrackContent track="react">
 
 ```tsx
+import { useRun, useStream } from "@amarsia/react"
+
+const { run } = useRun(client)
+const { stream } = useStream(client)
+
 await run({
   content: [{ type: "text", text: "Draft a support reply." }],
+  variables: {
+    CLIENT_NAME: "Sarah",
+    ISSUE_TYPE: "billing",
+  },
+})
+
+await stream({
+  content: [{ type: "text", text: "Now rewrite as 3 bullets." }],
   variables: {
     CLIENT_NAME: "Sarah",
     ISSUE_TYPE: "billing",

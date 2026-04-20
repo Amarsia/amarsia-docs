@@ -15,6 +15,8 @@ Get it from the [Amarsia dashboard](https://amarsia.com/dash/api_keys) under **A
 AMARSIA_API_KEY=your_key_here
 ```
 
+If your workflow has authentication turned off, API keys are optional and access is controlled by allowlist origin/referrer rules. See [Authentication](/api-reference/authentication).
+
 **Deployment ID** — identifies which assistant to run. In Amarsia, you build and deploy assistants. Each deployed assistant has its own Deployment ID. Find it in the assistant's **Deploy** tab in the dashboard.
 
 ```bash
@@ -160,6 +162,11 @@ await run({
 </TrackContent>
 
 The variable names must match exactly what's in your assistant's instructions. If there's a mismatch, the slot will be left blank.
+
+Variables also work with:
+
+- `client.stream(...)` / `useStream(...)`
+- first message of a conversation (`conversation.run(...)` or `conversation.stream(...)` when there is no active `conversation_id`)
 
 ---
 

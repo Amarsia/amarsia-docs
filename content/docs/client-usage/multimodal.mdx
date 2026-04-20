@@ -13,6 +13,8 @@ description: Send text and files together with SDK, React, or plain REST.
 - `audio`
 - `url` (like PDF links)
 
+The `content` shape is the same across `run`, `stream`, `conversation.run`, and `conversation.stream`.
+
 ## Input types
 
 | Item `type` | Required fields | Example |
@@ -45,6 +47,29 @@ const result = await client.run({
 })
 
 console.log(result.content)
+
+const streamed = await client.stream({
+  content: [
+    { type: "text", text: "Describe this brochure image live." },
+    {
+      type: "image",
+      mime_type: "image/jpeg",
+      file_uri: "https://example.com/brochure-page.jpg",
+    },
+  ],
+})
+
+client.conversation.start("conv_existing_123")
+await client.conversation.run({
+  content: [
+    { type: "text", text: "Use this PDF to answer follow-up questions." },
+    {
+      type: "url",
+      mime_type: "application/pdf",
+      file_uri: "https://example.com/price-list.pdf",
+    },
+  ],
+})
 ```
 
 </TrackContent>

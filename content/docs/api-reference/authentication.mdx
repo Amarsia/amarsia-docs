@@ -5,7 +5,9 @@ description: API key usage across SDK, React, and REST API tracks.
 
 ## One rule for all tracks
 
-Every request needs a valid API key. Get one from the [API Keys dashboard](https://amarsia.com/dash/api_keys).
+For authenticated workflows, send a valid API key from the [API Keys dashboard](https://amarsia.com/dash/api_keys).
+
+For public workflows (authentication turned off), `x-api-key` is not required. Access is controlled by the workflow allowlist using request `Origin` / `Referer`.
 
 <TrackContent track="sdk">
 
@@ -28,8 +30,11 @@ Pass `apiKey` in `amarsia.init(...)`. The SDK adds the auth header on every requ
 
 | Option | Type | Required |
 |---|---|---|
-| `apiKey` | string | Yes |
-| `deploymentId` | string | Yes |
+| `apiKey` | string | No (required only for authenticated workflows) |
+| `deploymentId` | string | No |
+| `baseUrl` | string | No |
+| `dangerouslyAllowBrowserApiKey` | boolean | No |
+| `fetch` | function | No |
 
 </ApiReferenceBlock>
 
@@ -78,19 +83,27 @@ Send `x-api-key` on every request. No SDK, no setup — just headers.
 
 | Header | Required | Notes |
 |---|---|---|
-| `x-api-key` | Yes | Your secret key |
+| `x-api-key` | Yes for authenticated workflows | Your secret key |
 | `Content-Type` | Yes | `application/json` |
 
 </ApiReferenceBlock>
 
 </TrackContent>
 
+## Public workflows (allowlist auth)
+
+If a workflow has Authentication disabled in the dashboard:
+
+- You can omit `apiKey` in SDK and omit `x-api-key` in REST.
+- Access is checked against the workflow allowlist (origin/referrer).
+- Requests from disallowed origins return `403`.
+
 ## Common auth errors
 
 | Status | Meaning | Fix |
 |---|---|---|
-| `401` | Missing or invalid key | Pass a valid key |
-| `403` | Key valid but not allowed | Check project access/permissions |
+| `401` | Missing or invalid key for authenticated workflow | Pass a valid key |
+| `403` | Origin or key not allowed | Check allowlist / project permissions |
 
 ## Security basics
 
