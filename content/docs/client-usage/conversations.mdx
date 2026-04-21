@@ -309,7 +309,7 @@ await conversation.list({
 <TrackContent track="rest-api">
 
 ```bash
-curl "https://api.amarsia.com/v1/runner/conversations?page=1&page_size=20&userId=user_123&channel=web-chat" \
+curl "https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/conversations?page=1&page_size=20&userId=user_123&channel=web-chat" \
   -H "x-api-key: YOUR_API_KEY"
 ```
 
@@ -320,7 +320,7 @@ curl "https://api.amarsia.com/v1/runner/conversations?page=1&page_size=20&userId
 ## Rules for `variables` and `meta`
 
 - `variables`: allowed on first message of a conversation only.
-- `meta`: allowed on first message only; used for filtering with `GET /conversations`.
+- `meta`: allowed on first message only; used for filtering with `GET /{deployment_id}/conversations`.
 - Passing `variables` or `meta` on continuation throws a validation error in the SDK.
 
 ---

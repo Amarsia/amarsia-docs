@@ -17,7 +17,7 @@ See [Runner API — content body structure](/api-reference/runner#content-body-s
 | `POST` | `/v1/runner/{deployment_id}/conversation` | Start or continue a conversation (non-stream) |
 | `POST` | `/v1/runner/{deployment_id}/conversation/stream` | Continue a conversation with streaming |
 | `GET` | `/v1/runner/conversation/{conversation_id}/messages` | Read paginated message history |
-| `GET` | `/v1/runner/conversations` | List conversations (supports `meta` filters) |
+| `GET` | `/v1/runner/{deployment_id}/conversations` | List conversations (supports `meta` filters) |
 
 **`POST /v1/runner/{deployment_id}/conversation`**
 
@@ -130,14 +130,14 @@ Response shape:
 }
 ```
 
-**`GET /v1/runner/conversations`**
+**`GET /v1/runner/{deployment_id}/conversations`**
 
 Lists conversations with pagination. You can filter by `meta` fields using query params.
 
 Example:
 
 ```text
-GET /v1/runner/conversations?page=1&page_size=20&userId=user_123&channel=web-chat
+GET /v1/runner/{deployment_id}/conversations?page=1&page_size=20&userId=user_123&channel=web-chat
 ```
 
 Response shape:
