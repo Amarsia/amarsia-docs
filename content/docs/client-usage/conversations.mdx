@@ -255,6 +255,25 @@ const messages = await conversation.loadMessages({
 console.log(messages)
 ```
 
+SDK return value:
+
+```json
+[
+  {
+    "id": "msg_1",
+    "role": "user",
+    "content": [{ "type": "text", "text": "Hi" }],
+    "created_at": "2026-05-28T09:32:06.738079"
+  },
+  {
+    "id": "msg_2",
+    "role": "assistant",
+    "content": [{ "type": "text", "text": "Hello! How can I help?" }],
+    "created_at": "2026-05-28T09:32:14.919855"
+  }
+]
+```
+
 </TrackContent>
 
 <TrackContent track="react">
@@ -269,6 +288,27 @@ await conversation.loadMessages({
 })
 ```
 
+React state after loading:
+
+```json
+{
+  "messages": [
+    {
+      "id": "msg_1",
+      "role": "user",
+      "content": [{ "type": "text", "text": "Hi" }],
+      "created_at": "2026-05-28T09:32:06.738079"
+    }
+  ],
+  "messagesPageInfo": {
+    "page": 1,
+    "page_size": 20,
+    "total": 1,
+    "has_more": false
+  }
+}
+```
+
 </TrackContent>
 
 <TrackContent track="rest-api">
@@ -276,6 +316,25 @@ await conversation.loadMessages({
 ```bash
 curl "https://api.amarsia.com/v1/runner/conversation/conv_abc123/messages?page=1&page_size=20" \
   -H "x-api-key: YOUR_API_KEY"
+```
+
+REST response body:
+
+```json
+{
+  "items": [
+    {
+      "id": "msg_1",
+      "role": "user",
+      "content": [{ "type": "text", "text": "Hi" }],
+      "created_at": "2026-05-28T09:32:06.738079"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 20,
+  "has_more": false
+}
 ```
 
 </TrackContent>
@@ -294,14 +353,58 @@ const threads = await conversation.list({
 })
 ```
 
+SDK return value:
+
+```json
+[
+  {
+    "id": "aadc38e8-6751-4bdb-9540-395227661af8",
+    "name": "IRC Section 61 Gross Income",
+    "meta": {
+      "browserId": "72d7322d-501b-418f-8401-2f86e8317129"
+    },
+    "message_count": 2,
+    "created_at": "2026-05-28T09:32:06.738079",
+    "updated_at": "2026-05-28T09:32:14.919855"
+  }
+]
+```
+
 </TrackContent>
 
 <TrackContent track="react">
 
 ```tsx
+const { conversation, conversations, conversationsPageInfo } = useConversation(client)
+
 await conversation.list({
   meta: { userId: "user_123" },
 })
+```
+
+React state after loading:
+
+```json
+{
+  "conversations": [
+    {
+      "id": "aadc38e8-6751-4bdb-9540-395227661af8",
+      "name": "IRC Section 61 Gross Income",
+      "meta": {
+        "browserId": "72d7322d-501b-418f-8401-2f86e8317129"
+      },
+      "message_count": 2,
+      "created_at": "2026-05-28T09:32:06.738079",
+      "updated_at": "2026-05-28T09:32:14.919855"
+    }
+  ],
+  "conversationsPageInfo": {
+    "page": 1,
+    "page_size": 20,
+    "total": 1,
+    "has_more": false
+  }
+}
 ```
 
 </TrackContent>
@@ -311,6 +414,29 @@ await conversation.list({
 ```bash
 curl "https://api.amarsia.com/v1/runner/YOUR_DEPLOYMENT_ID/conversations?page=1&page_size=20&userId=user_123&channel=web-chat" \
   -H "x-api-key: YOUR_API_KEY"
+```
+
+REST response body:
+
+```json
+{
+  "items": [
+    {
+      "id": "aadc38e8-6751-4bdb-9540-395227661af8",
+      "name": "IRC Section 61 Gross Income",
+      "meta": {
+        "browserId": "72d7322d-501b-418f-8401-2f86e8317129"
+      },
+      "message_count": 2,
+      "created_at": "2026-05-28T09:32:06.738079",
+      "updated_at": "2026-05-28T09:32:14.919855"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 20,
+  "has_more": false
+}
 ```
 
 </TrackContent>

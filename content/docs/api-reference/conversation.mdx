@@ -122,7 +122,7 @@ Response shape:
 
 ```json
 {
-  "messages": [{ "id": "msg_1", "role": "user", "content": [{ "type": "text", "text": "Hi" }], "created_at": "..." }],
+  "items": [{ "id": "msg_1", "role": "user", "content": [{ "type": "text", "text": "Hi" }], "created_at": "..." }],
   "page": 1,
   "page_size": 20,
   "total": 1,
@@ -144,7 +144,7 @@ Response shape:
 
 ```json
 {
-  "conversations": [{ "conversation_id": "conv_abc123", "meta": { "userId": "user_123" } }],
+  "items": [{ "id": "conv_abc123", "name": "Support chat", "meta": { "userId": "user_123" }, "message_count": 2 }],
   "page": 1,
   "page_size": 20,
   "total": 1,
@@ -184,7 +184,16 @@ The second `deploymentId` argument is an advanced option and is rarely needed.
   variables: { CUSTOMER_TIER: "pro" }, // first message only
   meta: { userId: "user_123" }, // first message only
   historyLimit: 10, // continuation only
-})`}
+})
+
+// returns ConversationData
+{
+  conversation_id: "conv_abc123",
+  content: "Assistant output...",
+  model: "MODEL_NAME",
+  input_tokens: 42,
+  output_tokens: 61,
+}`}
 >
 
 | Option | Type | Required | Notes |
@@ -207,7 +216,17 @@ await conversation.loadMessages({
   page: 1,
   pageSize: 20,
   append: true,
-})`}
+})
+
+// returns ConversationMessage[]
+[
+  {
+    id: "msg_1",
+    role: "user",
+    content: [{ type: "text", text: "Hi" }],
+    created_at: "2026-05-28T09:32:06.738079",
+  },
+]`}
 >
 
 | Option | Type | Required | Notes |
@@ -216,6 +235,9 @@ await conversation.loadMessages({
 | `page` | number | No | Defaults to API default |
 | `pageSize` | number | No | Defaults to API default |
 | `append` | boolean | No | Merge into existing `conversation.messages` and dedupe by message id |
+
+The REST endpoint returns `{ items, total, page, page_size, has_more }`.
+The SDK returns the `items` array and stores pagination in `conversation.messagesPageInfo`.
 
 </ApiReferenceBlock>
 
@@ -226,7 +248,21 @@ await conversation.loadMessages({
   page: 1,
   pageSize: 20,
   meta: { userId: "user_123", channel: "web-chat" },
-})`}
+})
+
+// returns ChatConversation[]
+[
+  {
+    id: "aadc38e8-6751-4bdb-9540-395227661af8",
+    name: "IRC Section 61 Gross Income",
+    meta: {
+      browserId: "72d7322d-501b-418f-8401-2f86e8317129",
+    },
+    message_count: 2,
+    created_at: "2026-05-28T09:32:06.738079",
+    updated_at: "2026-05-28T09:32:14.919855",
+  },
+]`}
 >
 
 | Option | Type | Required |
@@ -234,6 +270,9 @@ await conversation.loadMessages({
 | `page` | number | No |
 | `pageSize` | number | No |
 | `meta` | object | No |
+
+The REST endpoint returns `{ items, total, page, page_size, has_more }`.
+The SDK returns the `items` array and stores pagination in `conversation.conversationsPageInfo`.
 
 </ApiReferenceBlock>
 
@@ -252,7 +291,17 @@ State fields exposed by `client.conversation`:
 <ApiReferenceBlock
   title="useConversation(client)"
   language="tsx"
-  code={`const { conversation, id, status, live, data, messages } = useConversation(client)
+  code={`const {
+  conversation,
+  id,
+  status,
+  live,
+  data,
+  messages,
+  messagesPageInfo,
+  conversations,
+  conversationsPageInfo,
+} = useConversation(client)
 
 // resume from stored id
 useEffect(() => {
@@ -262,6 +311,8 @@ useEffect(() => {
 >
 
 `useConversation(client)` returns reactive conversation state plus the same conversation controller methods from the SDK.
+After `conversation.loadMessages(...)`, `messages` contains the returned `items` array and `messagesPageInfo` contains pagination.
+After `conversation.list(...)`, `conversations` contains the returned `items` array and `conversationsPageInfo` contains pagination.
 
 </ApiReferenceBlock>
 
